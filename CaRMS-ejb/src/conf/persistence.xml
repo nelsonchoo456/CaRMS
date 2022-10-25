@@ -6,6 +6,7 @@
     <class>entity.Category</class>
     <class>entity.RentalRate</class>
     <class>entity.Car</class>
+    <class>entity.RentalRecord</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="javax.persistence.schema-generation.database.action" value="create"/>

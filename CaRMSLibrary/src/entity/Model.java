@@ -35,9 +35,13 @@ public class Model implements Serializable {
     
     @OneToMany(mappedBy = "model")
     private List<Car> cars;
+    
+    @OneToMany(mappedBy = "model")
+    private List<RentalRecord> rentalRecords;
 
     public Model() {
         this.cars = new ArrayList<>();
+        this.rentalRecords = new ArrayList<>();
     }
 
     public Model(String make) {
@@ -119,6 +123,20 @@ public class Model implements Serializable {
      */
     public void setCars(List<Car> cars) {
         this.cars = cars;
+    }
+
+    /**
+     * @return the rentalRecords
+     */
+    public List<RentalRecord> getRentalRecords() {
+        return rentalRecords;
+    }
+
+    /**
+     * @param rentalRecords the rentalRecords to set
+     */
+    public void setRentalRecords(List<RentalRecord> rentalRecords) {
+        this.rentalRecords = rentalRecords;
     }
     
 }
