@@ -4,6 +4,7 @@
     <jta-data-source>jdbc/caRMS</jta-data-source>
     <class>entity.Model</class>
     <class>entity.Category</class>
+    <class>entity.RentalRate</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="javax.persistence.schema-generation.database.action" value="create"/>
