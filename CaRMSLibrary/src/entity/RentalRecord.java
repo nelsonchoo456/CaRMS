@@ -33,6 +33,10 @@ public class RentalRecord implements Serializable {
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
     private Model model;
+    
+    @ManyToOne(optional = false)
+    @JoinColumn(nullable = false)
+    private Customer customer;
 
     public RentalRecord() {
     }
@@ -141,6 +145,20 @@ public class RentalRecord implements Serializable {
      */
     public void setModel(Model model) {
         this.model = model;
+    }
+
+    /**
+     * @return the customer
+     */
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    /**
+     * @param customer the customer to set
+     */
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
     
 }
