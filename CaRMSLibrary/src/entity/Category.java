@@ -93,5 +93,33 @@ public class Category implements Serializable {
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
     }
+
+    /**
+     * @return the models
+     */
+    public List<Model> getModels() {
+        return models;
+    }
+
+    /**
+     * @param models the models to set
+     */
+    public void setModels(List<Model> models) {
+        this.models = models;
+    }
+
+    /**
+     * @return the rentalRates
+     */
+    public List<RentalRate> getRentalRates() {
+        return rentalRates;
+    }
+
+    /**
+     * @param rentalRates the rentalRates to set
+     */
+    public void setRentalRates(List<RentalRate> rentalRates) {
+        this.rentalRates = rentalRates;
+    }
     
 }

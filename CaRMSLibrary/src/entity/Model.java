@@ -6,12 +6,15 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -29,8 +32,12 @@ public class Model implements Serializable {
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
     private Category category;
+    
+    @OneToMany(mappedBy = "model")
+    private List<Car> cars;
 
     public Model() {
+        this.cars = new ArrayList<>();
     }
 
     public Model(String make) {
@@ -98,6 +105,20 @@ public class Model implements Serializable {
      */
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    /**
+     * @return the cars
+     */
+    public List<Car> getCars() {
+        return cars;
+    }
+
+    /**
+     * @param cars the cars to set
+     */
+    public void setCars(List<Car> cars) {
+        this.cars = cars;
     }
     
 }
