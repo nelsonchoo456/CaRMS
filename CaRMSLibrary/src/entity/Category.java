@@ -6,11 +6,13 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -25,8 +27,12 @@ public class Category implements Serializable {
     private Long categoryId;
     @Column(nullable = false, length = 32)
     private String categoryName;
+    
+    @OneToMany(mappedBy = "category")
+    private List<Model> models;
 
     public Category() {
+        this.models = new ArrayList<>();
     }
 
     public Category(Long categoryId, String categoryName) {
