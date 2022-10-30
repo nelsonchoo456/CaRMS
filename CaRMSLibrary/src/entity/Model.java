@@ -8,6 +8,7 @@ package entity;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -27,6 +28,7 @@ public class Model implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long modelId;
+    @Column(nullable = false, length = 32)
     private String make;
     
     @ManyToOne(optional = false)
@@ -40,12 +42,14 @@ public class Model implements Serializable {
     private List<RentalRecord> rentalRecords;
 
     public Model() {
-        this.cars = new ArrayList<>();
-        this.rentalRecords = new ArrayList<>();
+        this.cars = new ArrayList<Car>();
+        this.rentalRecords = new ArrayList<RentalRecord>();
     }
 
     public Model(String make) {
         this.make = make;
+        this.cars = new ArrayList<Car>();
+        this.rentalRecords = new ArrayList<RentalRecord>();
     }
     
     

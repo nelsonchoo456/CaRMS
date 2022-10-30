@@ -5,12 +5,21 @@
  */
 package ejb.session.singleton;
 
+import ejb.session.stateless.EmployeeSessionBeanLocal;
+import ejb.session.stateless.OutletSessionBeanLocal;
+import entity.Employee;
+import entity.Outlet;
+import java.math.BigDecimal;
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.LocalBean;
 import javax.ejb.Startup;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import util.enumeration.UserRoleEnum;
+import util.exception.EmployeeNotFoundException;
+import util.exception.OutletNotFoundException;
 
 /**
  *
@@ -21,8 +30,16 @@ import javax.persistence.PersistenceContext;
 @Startup
 public class DataInitSessionBean {
 
+    @EJB
+    private OutletSessionBeanLocal outletSessionBean;
+
+    @EJB
+    private EmployeeSessionBeanLocal employeeSessionBean;
+
     @PersistenceContext(unitName = "CaRMS-ejbPU")
     private EntityManager em;
+    
+    
     
     
 
@@ -32,6 +49,23 @@ public class DataInitSessionBean {
     @PostConstruct
     public void postConstruct() 
     {
-        
+        try
+        {
+            employeeSessionBean.retrieveEmployeeByUsername("admin");
+        }
+        catch(EmployeeNotFoundException ex)
+        {
+            initializeData();
+        }
+    }
+    
+    private void initializeData()
+    {
+        try {
+            Long outletId = outletSessionBean.createOutlet(new Outlet("Buona Vista", "0800"));
+            employeeSessionBean.createNewEmployee(new Employee("Default", "Admin", UserRoleEnum.ADMINISTRATOR, "admin", "password"), outletId);     
+        } catch (OutletNotFoundException ex) {
+            ex.printStackTrace();
+        }
     }
 }

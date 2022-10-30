@@ -6,7 +6,9 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -26,9 +28,13 @@ public class Car implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long carId;
+    @Column(nullable = false, length = 32)
     private String licensePlateNumber;
+    @Column(nullable = false, length = 32)
     private String colour;
+    @Column(nullable = false, length = 32)
     private String status;
+    @Column(nullable = false, length = 32)
     private String location;
     
     @ManyToOne(optional = false)
@@ -39,6 +45,7 @@ public class Car implements Serializable {
     private List<RentalRecord> rentalRecords; //no initialisation for now
 
     public Car() {
+        // this.rentalRecords = new ArrayList<RentalRecord>();
     }
 
     public Car(String licensePlateNumber, String colour, String status, String location) {
@@ -46,6 +53,7 @@ public class Car implements Serializable {
         this.colour = colour;
         this.status = status;
         this.location = location;
+        // this.rentalRecords = new ArrayList<RentalRecord>();
     }
     
     

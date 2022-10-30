@@ -8,6 +8,8 @@
     <class>entity.Car</class>
     <class>entity.RentalRecord</class>
     <class>entity.Customer</class>
+    <class>entity.Outlet</class>
+    <class>entity.Employee</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="javax.persistence.schema-generation.database.action" value="create"/>

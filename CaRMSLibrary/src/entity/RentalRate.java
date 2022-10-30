@@ -6,6 +6,7 @@
 package entity;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -24,25 +25,25 @@ public class RentalRate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long rateId;
+    @Column(nullable = false, length = 32)
     private String name;
+    @Column(nullable = false, length = 32)
     private Long dayRate;
+    @Column(nullable = false, length = 32)
     private Long validityPeriod;
     
     @ManyToOne(optional = false)
     @JoinColumn(nullable  = false)
-    private Category carCategory;
+    private Category category;
 
     public RentalRate() {
     }
 
-    public RentalRate(String name, Long dayRate, Long validityPeriod, Category carCategory) {
+    public RentalRate(String name, Long dayRate, Long validityPeriod) {
         this.name = name;
         this.dayRate = dayRate;
         this.validityPeriod = validityPeriod;
-        this.carCategory = carCategory;
     }
-    
-    
     
     
     public Long getRateId() {
@@ -121,24 +122,17 @@ public class RentalRate implements Serializable {
     }
 
     /**
-     * @return the carCategory
+     * @return the category
      */
-    public Category getCarCategory() {
-        return carCategory;
+    public Category getCategory() {
+        return category;
     }
 
     /**
-     * @param carCategory the carCategory to set
+     * @param category the category to set
      */
-    public void setCarCategory(String carCategory) {
-        this.setCarCategory(carCategory);
-    }
-
-    /**
-     * @param carCategory the carCategory to set
-     */
-    public void setCarCategory(Category carCategory) {
-        this.carCategory = carCategory;
+    public void setCategory(Category category) {
+        this.category = category;
     }
     
 }

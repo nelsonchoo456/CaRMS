@@ -36,16 +36,15 @@ public class Category implements Serializable {
     private List<RentalRate> rentalRates;
 
     public Category() {
-        this.models = new ArrayList<>();
-        this.rentalRates = new ArrayList<>();
+        this.models = new ArrayList<Model>();
+        this.rentalRates = new ArrayList<RentalRate>();
     }
 
-    public Category(Long categoryId, String categoryName) {
-        this.categoryId = categoryId;
+    public Category(String categoryName) {
         this.categoryName = categoryName;
+        this.models = new ArrayList<Model>();
+        this.rentalRates = new ArrayList<RentalRate>();
     }
-    
-    
 
     public Long getCategoryId() {
         return categoryId;
