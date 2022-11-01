@@ -30,6 +30,8 @@ public class Model implements Serializable {
     private Long modelId;
     @Column(nullable = false, length = 32)
     private String make;
+    @Column(nullable = false)
+    private boolean isDisabled;
     
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
@@ -44,10 +46,12 @@ public class Model implements Serializable {
     public Model() {
         this.cars = new ArrayList<Car>();
         this.rentalRecords = new ArrayList<RentalRecord>();
+        this.isDisabled = false;
     }
 
     public Model(String make) {
         this.make = make;
+        this.isDisabled = false;
         this.cars = new ArrayList<Car>();
         this.rentalRecords = new ArrayList<RentalRecord>();
     }
@@ -141,6 +145,20 @@ public class Model implements Serializable {
      */
     public void setRentalRecords(List<RentalRecord> rentalRecords) {
         this.rentalRecords = rentalRecords;
+    }
+
+    /**
+     * @return the isDisabled
+     */
+    public boolean isIsDisabled() {
+        return isDisabled;
+    }
+
+    /**
+     * @param isDisabled the isDisabled to set
+     */
+    public void setIsDisabled(boolean isDisabled) {
+        this.isDisabled = isDisabled;
     }
     
 }

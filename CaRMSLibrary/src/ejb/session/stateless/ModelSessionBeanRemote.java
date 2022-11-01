@@ -8,6 +8,8 @@ package ejb.session.stateless;
 import entity.Model;
 import java.util.List;
 import javax.ejb.Remote;
+import util.exception.CategoryNotFoundException;
+import util.exception.ModelNotFoundException;
 
 /**
  *
@@ -15,7 +17,10 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface ModelSessionBeanRemote {
-    public Long createNewModel(Model model);
+    
+    public Long createNewModel(Model model, Long categoryId) throws CategoryNotFoundException;
     
     public List<Model> viewAllModels();
+    
+    public Model retrieveModelById(Long modelId) throws ModelNotFoundException;
 }

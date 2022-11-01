@@ -8,6 +8,8 @@ package ejb.session.stateless;
 import entity.Model;
 import java.util.List;
 import javax.ejb.Local;
+import util.exception.CategoryNotFoundException;
+import util.exception.ModelNotFoundException;
 
 /**
  *
@@ -16,8 +18,10 @@ import javax.ejb.Local;
 @Local
 public interface ModelSessionBeanLocal {
 
-    public Long createNewModel(Model model);
+    public Long createNewModel(Model model, Long categoryId) throws CategoryNotFoundException;
 
     public List<Model> viewAllModels();
+
+    public Model retrieveModelById(Long modelId) throws ModelNotFoundException;
     
 }
