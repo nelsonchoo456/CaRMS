@@ -5,6 +5,7 @@
  */
 package ejb.session.stateless;
 
+import entity.Car;
 import entity.Category;
 import entity.Model;
 import java.util.List;
@@ -54,7 +55,7 @@ public class ModelSessionBean implements ModelSessionBeanRemote, ModelSessionBea
     @Override
     public List<Model> viewAllModels() 
     {
-        Query query = em.createQuery("SELECT m FROM Model m ORDER ORDER BY m.category, m.make ASC");
+        Query query = em.createQuery("SELECT m FROM Model m ORDER BY m.category, m.make ASC");
         
         return query.getResultList();
     }
@@ -68,6 +69,37 @@ public class ModelSessionBean implements ModelSessionBeanRemote, ModelSessionBea
             return model;
         } else {
             throw new ModelNotFoundException("Model " + modelId + " does not exist.");
+        }
+    }
+    
+    @Override
+    public void updateModel(Model model) throws ModelNotFoundException
+    {
+        if (model != null && model.getModelId() != null)
+        {
+            Model modelToUpdate = retrieveModelById(model.getModelId());
+            
+            modelToUpdate.setMake(model.getMake());
+            modelToUpdate.setIsDisabled(model.isIsDisabled());
+        }
+        else 
+        {
+            throw new ModelNotFoundException("Model ID not provided for Model to be updated");
+        }
+    }
+    
+    @Override
+    public void deleteModel(Long modelId) throws ModelNotFoundException
+    {
+        Model model = retrieveModelById(modelId);
+        
+        model.getCategory().getModels().remove(model);
+        model.setCategory(null);
+        
+        if (model.getCars().isEmpty()) {
+            em.remove(model);
+        } else {
+            model.setIsDisabled(true);
         }
     }
 }

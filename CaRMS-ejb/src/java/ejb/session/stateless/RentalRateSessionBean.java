@@ -68,6 +68,25 @@ public class RentalRateSessionBean implements RentalRateSessionBeanRemote, Renta
     }
     
     @Override
+    public void updateRentalRate(RentalRate rentalRate) throws RentalRateNotFoundException
+    {
+        if (rentalRate != null && rentalRate.getRateId() != null)
+        {
+            RentalRate rentalRateToUpdate = retrieveRentalRateById(rentalRate.getRateId());
+            
+            rentalRateToUpdate.setName(rentalRate.getName());
+            rentalRateToUpdate.setDayRate(rentalRate.getDayRate());
+            rentalRateToUpdate.setValidityPeriod(rentalRate.getValidityPeriod());
+        }
+        else 
+        {
+            throw new RentalRateNotFoundException("Rental Rate ID not provided for Rental Rate to be updated");
+        }
+    }
+    
+    
+    
+    @Override
     public void deleteRentalRate(Long rentalRateId) throws RentalRateNotFoundException
     {
         RentalRate rentalRate = retrieveRentalRateById(rentalRateId);

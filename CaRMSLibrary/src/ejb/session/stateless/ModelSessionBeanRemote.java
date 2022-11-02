@@ -23,4 +23,8 @@ public interface ModelSessionBeanRemote {
     public List<Model> viewAllModels();
     
     public Model retrieveModelById(Long modelId) throws ModelNotFoundException;
+    
+    public void updateModel(Model model) throws ModelNotFoundException;
+    
+    public void deleteModel(Long modelId) throws ModelNotFoundException;
 }

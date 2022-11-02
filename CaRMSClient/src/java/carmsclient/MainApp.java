@@ -5,10 +5,15 @@
  */
 package carmsclient;
 
+import ejb.session.stateless.CarSessionBeanRemote;
+import ejb.session.stateless.CategorySessionBeanRemote;
 import ejb.session.stateless.EmployeeSessionBeanRemote;
+import ejb.session.stateless.ModelSessionBeanRemote;
 import ejb.session.stateless.OutletSessionBeanRemote;
+import ejb.session.stateless.RentalRateSessionBeanRemote;
 import entity.Employee;
 import java.util.Scanner;
+import util.exception.InvalidAccessRightException;
 import util.exception.InvalidLoginCredentialException;
 
 /**
@@ -18,15 +23,26 @@ import util.exception.InvalidLoginCredentialException;
 public class MainApp {
     private OutletSessionBeanRemote outletSessionBeanRemote;
     private EmployeeSessionBeanRemote employeeSessionBeanRemote;
+    private RentalRateSessionBeanRemote rentalRateSessionBeanRemote;
+    private ModelSessionBeanRemote modelSessionBeanRemote;
+    private CategorySessionBeanRemote categorySessionBeanRemote;
+    private CarSessionBeanRemote carSessionBeanRemote;
+    
+    private SalesManagementModule salesManagementModule;
     
     private Employee currentEmployee;
 
     public MainApp() {
     }
 
-    public MainApp(OutletSessionBeanRemote outletSessionBeanRemote, EmployeeSessionBeanRemote employeeSessionBeanRemote) {
+    public MainApp(OutletSessionBeanRemote outletSessionBeanRemote, EmployeeSessionBeanRemote employeeSessionBeanRemote, RentalRateSessionBeanRemote rentalRateSessionBeanRemote, ModelSessionBeanRemote modelSessionBeanRemote, CategorySessionBeanRemote categorySessionBeanRemote, CarSessionBeanRemote carSessionBeanRemote) {
         this.outletSessionBeanRemote = outletSessionBeanRemote;
         this.employeeSessionBeanRemote = employeeSessionBeanRemote;
+        this.rentalRateSessionBeanRemote = rentalRateSessionBeanRemote;
+        this.modelSessionBeanRemote = modelSessionBeanRemote;
+        this.categorySessionBeanRemote = categorySessionBeanRemote;
+        this.carSessionBeanRemote = carSessionBeanRemote;
+        
     }
     
     
@@ -54,11 +70,9 @@ public class MainApp {
                     {
                         doLogin();
                         System.out.println("Login successful!\n");
-                        break;
-//                        
-//                        cashierOperationModule = new CashierOperationModule(productEntitySessionBeanRemote, saleTransactionEntitySessionBeanRemote, checkoutBeanRemote, emailSessionBeanRemote, queueCheckoutNotification, queueCheckoutNotificationFactory, currentStaffEntity);
-//                        systemAdministrationModule = new SystemAdministrationModule(staffEntitySessionBeanRemote, productEntitySessionBeanRemote, currentStaffEntity);
-//                        menuMain();
+                        
+                        salesManagementModule  = new SalesManagementModule(outletSessionBeanRemote, employeeSessionBeanRemote, rentalRateSessionBeanRemote, modelSessionBeanRemote, categorySessionBeanRemote, carSessionBeanRemote, currentEmployee);
+                        menuMain();
                     }
                     catch(InvalidLoginCredentialException ex) 
                     {
@@ -75,7 +89,7 @@ public class MainApp {
                 }
             }
             
-            if(response == 1 || response == 2) // change to just response == 2 eventually
+            if(response == 2)
             {
                 break;
             }
@@ -101,6 +115,62 @@ public class MainApp {
         else
         {
             throw new InvalidLoginCredentialException("Missing login credential!");
+        }
+    }
+    
+    private void menuMain()
+    {
+        Scanner scanner = new Scanner(System.in);
+        Integer response = 0;
+        
+        while(true)
+        {
+            System.out.println("*** Merlion CARMS ***\n");
+            System.out.println("You are login as " + currentEmployee.getFirstName() + " " + currentEmployee.getLastName() + " with " + currentEmployee.getUserRoleEnum().toString() + " rights\n");
+            System.out.println("1: Sales Management");
+            System.out.println("2: Operations Management");
+            System.out.println("3: Logout\n");
+            response = 0;
+            
+            while(response < 1 || response > 3)
+            {
+                System.out.print("> ");
+
+                response = scanner.nextInt();
+
+                if(response == 1)
+                {
+                    try {
+                        salesManagementModule.menuSalesManagement();
+                    } catch (InvalidAccessRightException ex) {
+                        System.out.println("Invalid option, please try again!: " + ex.getMessage() + "\n");
+                    }
+                }
+                else if(response == 2)
+                {
+                    try
+                    {
+                        salesManagementModule.menuOperationsManagement();
+                    }
+                    catch (InvalidAccessRightException ex)
+                    {
+                        System.out.println("Invalid option, please try again!: " + ex.getMessage() + "\n");
+                    }
+                }
+                else if (response == 3)
+                {
+                    break;
+                }
+                else
+                {
+                    System.out.println("Invalid option, please try again!\n");                
+                }
+            }
+            
+            if(response == 3)
+            {
+                break;
+            }
         }
     }
 }

@@ -28,9 +28,9 @@ public class RentalRate implements Serializable {
     @Column(nullable = false, length = 32)
     private String name;
     @Column(nullable = false, length = 32)
-    private Long dayRate;
+    private String dayRate;
     @Column(nullable = false, length = 32)
-    private Long validityPeriod;
+    private String validityPeriod;
     
     @ManyToOne(optional = false)
     @JoinColumn(nullable  = false)
@@ -39,7 +39,7 @@ public class RentalRate implements Serializable {
     public RentalRate() {
     }
 
-    public RentalRate(String name, Long dayRate, Long validityPeriod) {
+    public RentalRate(String name, String dayRate, String validityPeriod) {
         this.name = name;
         this.dayRate = dayRate;
         this.validityPeriod = validityPeriod;
@@ -96,28 +96,28 @@ public class RentalRate implements Serializable {
     /**
      * @return the dayRate
      */
-    public Long getDayRate() {
+    public String getDayRate() {
         return dayRate;
     }
 
     /**
      * @param dayRate the dayRate to set
      */
-    public void setDayRate(Long dayRate) {
+    public void setDayRate(String dayRate) {
         this.dayRate = dayRate;
     }
 
     /**
      * @return the validityPeriod
      */
-    public Long getValidityPeriod() {
+    public String getValidityPeriod() {
         return validityPeriod;
     }
 
     /**
      * @param validityPeriod the validityPeriod to set
      */
-    public void setValidityPeriod(Long validityPeriod) {
+    public void setValidityPeriod(String validityPeriod) {
         this.validityPeriod = validityPeriod;
     }
 
