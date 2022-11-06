@@ -5,8 +5,10 @@
  */
 package ejb.session.singleton;
 
+import ejb.session.stateless.CategorySessionBeanLocal;
 import ejb.session.stateless.EmployeeSessionBeanLocal;
 import ejb.session.stateless.OutletSessionBeanLocal;
+import entity.Category;
 import entity.Employee;
 import entity.Outlet;
 import java.math.BigDecimal;
@@ -29,6 +31,9 @@ import util.exception.OutletNotFoundException;
 @LocalBean
 @Startup
 public class DataInitSessionBean {
+
+    @EJB
+    private CategorySessionBeanLocal categorySessionBean;
 
     @EJB
     private OutletSessionBeanLocal outletSessionBean;
@@ -63,7 +68,8 @@ public class DataInitSessionBean {
     {
         try {
             Long outletId = outletSessionBean.createOutlet(new Outlet("Buona Vista", "0800"));
-            employeeSessionBean.createNewEmployee(new Employee("Default", "Admin", UserRoleEnum.ADMINISTRATOR, "admin", "password"), outletId);     
+            employeeSessionBean.createNewEmployee(new Employee("Default", "Admin", UserRoleEnum.ADMINISTRATOR, "admin", "password"), outletId);  
+            categorySessionBean.createNewCategory(new Category("Sedan"));
         } catch (OutletNotFoundException ex) {
             ex.printStackTrace();
         }

@@ -92,7 +92,6 @@ public class CarSessionBean implements CarSessionBeanRemote, CarSessionBeanLocal
     {
         Car car = retrieveCarById(carId);
         car.getModel().getCars().remove(car);
-        car.setModel(null);
         em.remove(car);
     }
 }
