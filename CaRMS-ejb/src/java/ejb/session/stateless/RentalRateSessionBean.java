@@ -39,11 +39,11 @@ public class RentalRateSessionBean implements RentalRateSessionBeanRemote, Renta
             Category category = categorySessionBean.retrieveCategoryById(categoryId);
             rentalRate.setCategory(category);
             category.getRentalRates().add(rentalRate);
-            em.persist(rentalRate);
-            em.flush();
         } catch (CategoryNotFoundException ex) {
             throw new CategoryNotFoundException(ex.getMessage());
         }
+        em.persist(rentalRate);
+        em.flush();
         return rentalRate.getRateId();
     }
     
@@ -91,7 +91,6 @@ public class RentalRateSessionBean implements RentalRateSessionBeanRemote, Renta
     {
         RentalRate rentalRate = retrieveRentalRateById(rentalRateId);
         rentalRate.getCategory().getRentalRates().remove(rentalRate);
-        rentalRate.setCategory(null);
         em.remove(rentalRate);
     }
 }
