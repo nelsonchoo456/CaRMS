@@ -26,18 +26,16 @@ public class Employee implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
-    @Column(nullable = false, length = 32)
-    private String firstName;
-    @Column(nullable = false, length = 32)
-    private String lastName;
+    @Column(nullable = false, length = 64)
+    private String name;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRoleEnum userRoleEnum;
-    @Column(nullable = false, unique = true, length = 32)
+    @Column(nullable = false, unique = true, length = 64)
     private String username;
-    @Column(nullable = false, length = 32)
+    @Column(nullable = false, length = 64)
     private String password;
     
     @ManyToOne(optional = false)
@@ -48,9 +46,8 @@ public class Employee implements Serializable {
     }
     
 
-    public Employee(String firstName, String lastName, UserRoleEnum userRoleEnum, String username, String password) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public Employee(String name, UserRoleEnum userRoleEnum, String username, String password) {
+        this.name = name;
         this.userRoleEnum = userRoleEnum;
         this.username = username;
         this.password = password;
@@ -92,31 +89,17 @@ public class Employee implements Serializable {
     }
 
     /**
-     * @return the firstName
+     * @return the name
      */
-    public String getFirstName() {
-        return firstName;
+    public String getName() {
+        return name;
     }
 
     /**
-     * @param firstName the firstName to set
+     * @param name the name to set
      */
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    /**
-     * @return the lastName
-     */
-    public String getLastName() {
-        return lastName;
-    }
-
-    /**
-     * @param lastName the lastName to set
-     */
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**

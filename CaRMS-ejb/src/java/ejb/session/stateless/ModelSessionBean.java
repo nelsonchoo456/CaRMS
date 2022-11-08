@@ -12,6 +12,8 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import util.exception.CategoryNotFoundException;
@@ -36,10 +38,10 @@ public class ModelSessionBean implements ModelSessionBeanRemote, ModelSessionBea
     // "Insert Code > Add Business Method")
     
     @Override
-    public Long createNewModel(Model model, Long categoryId) throws CategoryNotFoundException
+    public Long createNewModel(Model model, String categoryName) throws CategoryNotFoundException
     {
         try {
-            Category category = categorySessionBean.retrieveCategoryById(categoryId);
+            Category category = categorySessionBean.retrieveCategoryByName(categoryName);
             model.setCategory(category);
             category.getModels().add(model);
             em.persist(model);
@@ -73,6 +75,20 @@ public class ModelSessionBean implements ModelSessionBeanRemote, ModelSessionBea
     }
     
     @Override
+    public Model retrieveModelByModelNameAndMake(String modelName, String makeName) throws ModelNotFoundException
+    {
+        Query query = em.createQuery("SELECT m FROM Model m WHERE m.model = :inModel AND m.make = :inMake");
+        query.setParameter("inModel", modelName);
+        query.setParameter("inMake", makeName);
+        
+        try {
+            return (Model)query.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            throw new ModelNotFoundException("Model " + modelName + " " + makeName + " does not exist.");
+        }
+    }
+    
+    @Override
     public void updateModel(Model model) throws ModelNotFoundException
     {
         if (model != null && model.getModelId() != null)
@@ -80,6 +96,7 @@ public class ModelSessionBean implements ModelSessionBeanRemote, ModelSessionBea
             Model modelToUpdate = retrieveModelById(model.getModelId());
             
             modelToUpdate.setMake(model.getMake());
+            modelToUpdate.setModel(model.getModel());
             modelToUpdate.setIsDisabled(model.isIsDisabled());
         }
         else 

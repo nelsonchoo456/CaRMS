@@ -8,6 +8,7 @@ package entity;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,26 +26,33 @@ public class Customer implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long customerId;
+    @Column(nullable = false, length = 32)
+    private String firstName;
+    @Column(nullable = false, length = 32)
+    private String lastName;
+    @Column(nullable = false, length = 32)
     private String email;
-    private Long phoneNumber;
-    private String passportNumber;
-    private Long creditCardNumber;
-
-    public Customer() {
-        this.rentalRecords = new ArrayList<>();
-    }
-
-    public Customer(String email, Long phoneNumber, String passportNumber, Long creditCardNumber) {
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.passportNumber = passportNumber;
-        this.creditCardNumber = creditCardNumber;
-    }
+    @Column(nullable = false, length = 32)
+    private String password;
+    @Column(nullable = false, length = 64)
+    private String creditCardNumber;
     
     @OneToMany(mappedBy = "customer")
     private List<RentalRecord> rentalRecords;
     
+    public Customer() {
+        this.rentalRecords = new ArrayList<>();
+    }
 
+    public Customer(String firstName, String lastName, String email, String password, String creditCardNumber, List<RentalRecord> rentalRecords) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.creditCardNumber = creditCardNumber;
+        this.rentalRecords = rentalRecords;
+    }
+    
     public Long getCustomerId() {
         return customerId;
     }
@@ -93,44 +101,16 @@ public class Customer implements Serializable {
     }
 
     /**
-     * @return the phoneNumber
-     */
-    public Long getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    /**
-     * @param phoneNumber the phoneNumber to set
-     */
-    public void setPhoneNumber(Long phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    /**
-     * @return the passportNumber
-     */
-    public String getPassportNumber() {
-        return passportNumber;
-    }
-
-    /**
-     * @param passportNumber the passportNumber to set
-     */
-    public void setPassportNumber(String passportNumber) {
-        this.passportNumber = passportNumber;
-    }
-
-    /**
      * @return the creditCardNumber
      */
-    public Long getCreditCardNumber() {
+    public String getCreditCardNumber() {
         return creditCardNumber;
     }
 
     /**
      * @param creditCardNumber the creditCardNumber to set
      */
-    public void setCreditCardNumber(Long creditCardNumber) {
+    public void setCreditCardNumber(String creditCardNumber) {
         this.creditCardNumber = creditCardNumber;
     }
 
@@ -146,6 +126,48 @@ public class Customer implements Serializable {
      */
     public void setRentalRecords(List<RentalRecord> rentalRecords) {
         this.rentalRecords = rentalRecords;
+    }
+
+    /**
+     * @return the firstName
+     */
+    public String getFirstName() {
+        return firstName;
+    }
+
+    /**
+     * @param firstName the firstName to set
+     */
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    /**
+     * @return the lastName
+     */
+    public String getLastName() {
+        return lastName;
+    }
+
+    /**
+     * @param lastName the lastName to set
+     */
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
     }
     
 }

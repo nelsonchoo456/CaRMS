@@ -6,7 +6,9 @@
 package entity;
 
 import java.io.Serializable;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,6 +16,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -24,27 +28,30 @@ public class Outlet implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long outletId;
-    @Column(nullable = false, length = 32)
-    private String address;
-    @Column(nullable = false, length = 32)
-    private String openingHours;
+    @Column(nullable = false, length = 64)
+    private String outletName;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date openingHour;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date closingHour;
     
     @OneToMany(mappedBy = "outlet")
     private List<Employee> employees;
+    
+    @OneToMany(mappedBy = "outlet")
+    private List<Car> cars;
 
     public Outlet() {
         this.employees = new ArrayList<Employee>();
     }
 
-    public Outlet(String address, String openingHours) {
-        this.address = address;
-        this.openingHours = openingHours;
-        this.employees = new ArrayList<Employee>();
+    public Outlet(String address, Date openingHour, Date closingHour) {
+        this.outletName = address;
+        this.openingHour = openingHour;
+        this.closingHour = closingHour;
     }
-    
-    
 
     public Long getOutletId() {
         return outletId;
@@ -80,31 +87,31 @@ public class Outlet implements Serializable {
     }
 
     /**
-     * @return the address
+     * @return the outletName
      */
-    public String getAddress() {
-        return address;
+    public String getOutletName() {
+        return outletName;
     }
 
     /**
-     * @param address the address to set
+     * @param outletName the outletName to set
      */
-    public void setAddress(String address) {
-        this.address = address;
+    public void setOutletName(String outletName) {
+        this.outletName = outletName;
     }
 
     /**
-     * @return the openingHours
+     * @return the openingHour
      */
-    public String getOpeningHours() {
-        return openingHours;
+    public Date getOpeningHour() {
+        return openingHour;
     }
 
     /**
-     * @param openingHours the openingHours to set
+     * @param openingHour the openingHour to set
      */
-    public void setOpeningHours(String openingHours) {
-        this.openingHours = openingHours;
+    public void setOpeningHour(Date openingHour) {
+        this.openingHour = openingHour;
     }
 
     /**
@@ -119,6 +126,34 @@ public class Outlet implements Serializable {
      */
     public void setEmployees(List<Employee> employees) {
         this.employees = employees;
+    }
+
+    /**
+     * @return the closingHour
+     */
+    public Date getClosingHour() {
+        return closingHour;
+    }
+
+    /**
+     * @param closingHour the closingHour to set
+     */
+    public void setClosingHour(Date closingHour) {
+        this.closingHour = closingHour;
+    }
+
+    /**
+     * @return the cars
+     */
+    public List<Car> getCars() {
+        return cars;
+    }
+
+    /**
+     * @param cars the cars to set
+     */
+    public void setCars(List<Car> cars) {
+        this.cars = cars;
     }
     
 }

@@ -18,7 +18,7 @@ import util.exception.ModelNotFoundException;
 @Local
 public interface ModelSessionBeanLocal {
 
-    public Long createNewModel(Model model, Long categoryId) throws CategoryNotFoundException;
+    public Long createNewModel(Model model, String categoryName) throws CategoryNotFoundException;
 
     public List<Model> viewAllModels();
 
@@ -27,5 +27,7 @@ public interface ModelSessionBeanLocal {
     public void updateModel(Model model) throws ModelNotFoundException;
 
     public void deleteModel(Long modelId) throws ModelNotFoundException;
+
+    public Model retrieveModelByModelNameAndMake(String modelName, String makeName) throws ModelNotFoundException;
     
 }

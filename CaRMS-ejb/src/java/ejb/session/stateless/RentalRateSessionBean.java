@@ -33,10 +33,10 @@ public class RentalRateSessionBean implements RentalRateSessionBeanRemote, Renta
     // "Insert Code > Add Business Method")
     
     @Override
-    public Long createNewRentalRate(RentalRate rentalRate, Long categoryId) throws CategoryNotFoundException
+    public Long createNewRentalRate(RentalRate rentalRate, String categoryName) throws CategoryNotFoundException
     {
         try {
-            Category category = categorySessionBean.retrieveCategoryById(categoryId);
+            Category category = categorySessionBean.retrieveCategoryByName(categoryName);
             rentalRate.setCategory(category);
             category.getRentalRates().add(rentalRate);
         } catch (CategoryNotFoundException ex) {
@@ -62,7 +62,7 @@ public class RentalRateSessionBean implements RentalRateSessionBeanRemote, Renta
     @Override
     public List<RentalRate> viewAllRentalRates() 
     {
-        Query query = em.createQuery("SELECT rr FROM RentalRate rr");
+        Query query = em.createQuery("SELECT rr FROM RentalRate rr ORDER BY rr.category, rr.startDateTime");
         
         return query.getResultList();
     }
@@ -75,8 +75,9 @@ public class RentalRateSessionBean implements RentalRateSessionBeanRemote, Renta
             RentalRate rentalRateToUpdate = retrieveRentalRateById(rentalRate.getRateId());
             
             rentalRateToUpdate.setName(rentalRate.getName());
-            rentalRateToUpdate.setDayRate(rentalRate.getDayRate());
-            rentalRateToUpdate.setValidityPeriod(rentalRate.getValidityPeriod());
+            rentalRateToUpdate.setRatePerDay(rentalRate.getRatePerDay());
+            rentalRateToUpdate.setStartDateTime(rentalRate.getStartDateTime());
+            rentalRateToUpdate.setEndDateTime(rentalRate.getEndDateTime());
         }
         else 
         {

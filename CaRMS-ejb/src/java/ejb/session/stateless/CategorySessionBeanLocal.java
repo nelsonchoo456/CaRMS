@@ -19,5 +19,7 @@ public interface CategorySessionBeanLocal {
     public Long createNewCategory(Category category);
 
     public Category retrieveCategoryById(Long id) throws CategoryNotFoundException;
+
+    public Category retrieveCategoryByName(String name) throws CategoryNotFoundException;
     
 }

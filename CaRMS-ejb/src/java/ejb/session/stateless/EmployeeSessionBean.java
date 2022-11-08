@@ -81,12 +81,12 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
             }
             else
             {
-                throw new InvalidLoginCredentialException("Username does not exist or invalid password!");
+                throw new InvalidLoginCredentialException("Password Incorrect!");
             }
         }
         catch(EmployeeNotFoundException ex)
         {
-            throw new InvalidLoginCredentialException("Username does not exist or invalid password!");
+            throw new InvalidLoginCredentialException("Username does not exist.");
         }
     }
     

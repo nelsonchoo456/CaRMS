@@ -28,8 +28,10 @@ public class Model implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long modelId;
-    @Column(nullable = false, length = 32)
+    @Column(nullable = false, length = 64)
     private String make;
+    @Column(nullable = false, length = 64)
+    private String model;
     @Column(nullable = false)
     private boolean isDisabled;
     
@@ -49,14 +51,12 @@ public class Model implements Serializable {
         this.isDisabled = false;
     }
 
-    public Model(String make) {
+    public Model(String make, String model, Category category) {
         this.make = make;
+        this.model = model;
         this.isDisabled = false;
-        this.cars = new ArrayList<Car>();
-        this.rentalRecords = new ArrayList<RentalRecord>();
+        this.category = category;
     }
-    
-    
 
     public Long getModelId() {
         return modelId;
@@ -159,6 +159,20 @@ public class Model implements Serializable {
      */
     public void setIsDisabled(boolean isDisabled) {
         this.isDisabled = isDisabled;
+    }
+
+    /**
+     * @return the model
+     */
+    public String getModel() {
+        return model;
+    }
+
+    /**
+     * @param model the model to set
+     */
+    public void setModel(String model) {
+        this.model = model;
     }
     
 }

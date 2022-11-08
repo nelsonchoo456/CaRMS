@@ -18,7 +18,7 @@ import util.exception.ModelNotFoundException;
 @Remote
 public interface ModelSessionBeanRemote {
     
-    public Long createNewModel(Model model, Long categoryId) throws CategoryNotFoundException;
+    public Long createNewModel(Model model, String categoryName) throws CategoryNotFoundException;
     
     public List<Model> viewAllModels();
     
@@ -27,4 +27,6 @@ public interface ModelSessionBeanRemote {
     public void updateModel(Model model) throws ModelNotFoundException;
     
     public void deleteModel(Long modelId) throws ModelNotFoundException;
+    
+    public Model retrieveModelByModelNameAndMake(String modelName, String makeName) throws ModelNotFoundException;
 }

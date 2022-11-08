@@ -11,6 +11,7 @@ import javax.ejb.Local;
 import util.exception.CarNotFoundException;
 import util.exception.ModelDisabledException;
 import util.exception.ModelNotFoundException;
+import util.exception.OutletNotFoundException;
 
 /**
  *
@@ -19,7 +20,7 @@ import util.exception.ModelNotFoundException;
 @Local
 public interface CarSessionBeanLocal {
 
-    public Long createNewCar(Car car, Long modelId) throws ModelNotFoundException, ModelDisabledException;
+    public Long createNewCar(Car car, String modelName, String makeName, String outletName) throws ModelNotFoundException, ModelDisabledException, OutletNotFoundException;
 
     public Car retrieveCarById(Long carId) throws CarNotFoundException;
 
@@ -28,5 +29,7 @@ public interface CarSessionBeanLocal {
     public void updateCar(Car car) throws CarNotFoundException;
 
     public void deleteCar(Long carId) throws CarNotFoundException;
+
+    public Car retrieveCarByLicensePlateNumber(String license) throws CarNotFoundException;
     
 }

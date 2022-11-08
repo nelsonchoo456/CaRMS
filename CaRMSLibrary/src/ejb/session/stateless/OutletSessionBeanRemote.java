@@ -19,4 +19,6 @@ public interface OutletSessionBeanRemote {
     public Long createOutlet(Outlet outlet);
     
     public Outlet retrieveOutletById(Long outletId) throws OutletNotFoundException;
+    
+    public Outlet retrieveOutletByName(String outletName) throws OutletNotFoundException;
 }

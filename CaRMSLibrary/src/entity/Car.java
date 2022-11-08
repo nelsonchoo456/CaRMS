@@ -10,12 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import util.enumeration.CarStatusEnum;
 
 /**
  *
@@ -30,12 +33,9 @@ public class Car implements Serializable {
     private Long carId;
     @Column(nullable = false, length = 32)
     private String licensePlateNumber;
-    @Column(nullable = false, length = 32)
-    private String colour;
-    @Column(nullable = false, length = 32)
-    private String status;
-    @Column(nullable = false, length = 32)
-    private String location;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CarStatusEnum status;
     
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
@@ -43,16 +43,18 @@ public class Car implements Serializable {
     
     @OneToMany(mappedBy = "car")
     private List<RentalRecord> rentalRecords; //no initialisation for now
+    
+    @ManyToOne
+    private Outlet outlet;
 
     public Car() {
         // this.rentalRecords = new ArrayList<RentalRecord>();
     }
 
-    public Car(String licensePlateNumber, String colour, String status, String location) {
+    public Car(String licensePlateNumber, CarStatusEnum status, Model model) {
         this.licensePlateNumber = licensePlateNumber;
-        this.colour = colour;
         this.status = status;
-        this.location = location;
+        this.model = model;
         // this.rentalRecords = new ArrayList<RentalRecord>();
     }
     
@@ -104,47 +106,19 @@ public class Car implements Serializable {
     public void setLicensePlateNumber(String licensePlateNumber) {
         this.licensePlateNumber = licensePlateNumber;
     }
-
-    /**
-     * @return the colour
-     */
-    public String getColour() {
-        return colour;
-    }
-
-    /**
-     * @param colour the colour to set
-     */
-    public void setColour(String colour) {
-        this.colour = colour;
-    }
-
+    
     /**
      * @return the status
      */
-    public String getStatus() {
+    public CarStatusEnum getStatus() {
         return status;
     }
 
     /**
      * @param status the status to set
      */
-    public void setStatus(String status) {
+    public void setStatus(CarStatusEnum status) {
         this.status = status;
-    }
-
-    /**
-     * @return the location
-     */
-    public String getLocation() {
-        return location;
-    }
-
-    /**
-     * @param location the location to set
-     */
-    public void setLocation(String location) {
-        this.location = location;
     }
 
     /**
@@ -159,6 +133,20 @@ public class Car implements Serializable {
      */
     public void setModel(Model model) {
         this.model = model;
+    }
+
+    /**
+     * @return the outlet
+     */
+    public Outlet getOutlet() {
+        return outlet;
+    }
+
+    /**
+     * @param outlet the outlet to set
+     */
+    public void setOutlet(Outlet outlet) {
+        this.outlet = outlet;
     }
     
 }

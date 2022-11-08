@@ -9,10 +9,8 @@ package util.enumeration;
  *
  * @author Nelson Choo
  */
-public enum UserRoleEnum {
-    SALES_MANAGER,
-    OPERATIONS_MANAGER,
-    CUSTOMER_SERVICE_EXECUTIVE,
-    ADMINISTRATOR,
-    EMPLOYEE
+public enum CarStatusEnum {
+    AVAILABLE,
+    ON_RENTAL,
+    REPAIR
 }

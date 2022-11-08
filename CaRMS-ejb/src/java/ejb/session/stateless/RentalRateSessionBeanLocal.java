@@ -18,7 +18,7 @@ import util.exception.RentalRateNotFoundException;
 @Local
 public interface RentalRateSessionBeanLocal {
 
-    public Long createNewRentalRate(RentalRate rentalRate, Long categoryId) throws CategoryNotFoundException;
+    public Long createNewRentalRate(RentalRate rentalRate, String categoryName) throws CategoryNotFoundException;
 
     public RentalRate retrieveRentalRateById(Long id) throws RentalRateNotFoundException;
 

@@ -126,7 +126,7 @@ public class MainApp {
         while(true)
         {
             System.out.println("*** Merlion CARMS ***\n");
-            System.out.println("You are login as " + currentEmployee.getFirstName() + " " + currentEmployee.getLastName() + " with " + currentEmployee.getUserRoleEnum().toString() + " rights\n");
+            System.out.println("You are login as " + currentEmployee.getName() + " with " + currentEmployee.getUserRoleEnum().toString() + " rights\n");
             System.out.println("1: Sales Management");
             System.out.println("2: Operations Management");
             System.out.println("3: Logout\n");
