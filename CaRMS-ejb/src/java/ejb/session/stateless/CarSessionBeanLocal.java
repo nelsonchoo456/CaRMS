@@ -20,7 +20,7 @@ import util.exception.OutletNotFoundException;
 @Local
 public interface CarSessionBeanLocal {
 
-    public Long createNewCar(Car car, String modelName, String makeName, String outletName) throws ModelNotFoundException, ModelDisabledException, OutletNotFoundException;
+    public Long createNewCar(Car car, String makeName, String modelName, String outletName) throws ModelNotFoundException, ModelDisabledException, OutletNotFoundException;
 
     public Car retrieveCarById(Long carId) throws CarNotFoundException;
 
@@ -31,5 +31,9 @@ public interface CarSessionBeanLocal {
     public void deleteCar(Long carId) throws CarNotFoundException;
 
     public Car retrieveCarByLicensePlateNumber(String license) throws CarNotFoundException;
+
+    public List<Car> retrieveCarsByModelId(Long modelId);
+
+    public List<Car> retrieveCarsByCategoryId(Long carCategoryId);
     
 }

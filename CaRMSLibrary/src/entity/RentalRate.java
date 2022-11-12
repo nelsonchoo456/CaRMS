@@ -7,7 +7,9 @@ package entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -17,6 +19,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import util.enumeration.RentalRateTypeEnum;
@@ -43,21 +46,28 @@ public class RentalRate implements Serializable {
     private Date startDateTime;
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDateTime;
+    @Column(nullable = false)
+    private Boolean isEnabled;
+    @Column(nullable = false)
+    private Boolean isUsed;
     
     @ManyToOne(optional = false)
     @JoinColumn(nullable  = false)
     private Category category;
 
     public RentalRate() {
+        this.isEnabled = true;
+        this.isUsed = false;
     }
 
-    public RentalRate(String name, BigDecimal ratePerDay, RentalRateTypeEnum rentalRateType, Date startDateTime, Date endDateTime, Category category) {
+    public RentalRate(String name, BigDecimal ratePerDay, RentalRateTypeEnum rentalRateType, Date startDateTime, Date endDateTime, Boolean isEnabled, Boolean isUsed) {
         this.name = name;
         this.ratePerDay = ratePerDay;
         this.rentalRateType = rentalRateType;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
-        this.category = category;
+        this.isEnabled = isEnabled;
+        this.isUsed = isUsed;
     }
     
     
@@ -176,6 +186,34 @@ public class RentalRate implements Serializable {
      */
     public void setRentalRateType(RentalRateTypeEnum rentalRateType) {
         this.rentalRateType = rentalRateType;
+    }
+
+    /**
+     * @return the isEnabled
+     */
+    public Boolean getIsEnabled() {
+        return isEnabled;
+    }
+
+    /**
+     * @param isEnabled the isEnabled to set
+     */
+    public void setIsEnabled(Boolean isEnabled) {
+        this.isEnabled = isEnabled;
+    }
+
+    /**
+     * @return the isUsed
+     */
+    public Boolean getIsUsed() {
+        return isUsed;
+    }
+
+    /**
+     * @param isUsed the isUsed to set
+     */
+    public void setIsUsed(Boolean isUsed) {
+        this.isUsed = isUsed;
     }
     
 }

@@ -6,6 +6,7 @@
 package ejb.session.stateless;
 
 import entity.RentalRate;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Remote;
 import util.exception.CategoryNotFoundException;
@@ -27,5 +28,7 @@ public interface RentalRateSessionBeanRemote {
     public void deleteRentalRate(Long rentalRateId) throws RentalRateNotFoundException;
     
     public void updateRentalRate(RentalRate rentalRate) throws RentalRateNotFoundException;
+    
+    public RentalRate retrieveCheapestRentalRate(Long categoryId, Date currentDate) throws RentalRateNotFoundException;
     
 }

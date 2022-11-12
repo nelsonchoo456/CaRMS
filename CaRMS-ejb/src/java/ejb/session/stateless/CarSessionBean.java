@@ -42,10 +42,10 @@ public class CarSessionBean implements CarSessionBeanRemote, CarSessionBeanLocal
     // "Insert Code > Add Business Method")
     
     @Override
-    public Long createNewCar(Car car, String modelName, String makeName, String outletName) throws ModelNotFoundException, ModelDisabledException, OutletNotFoundException
+    public Long createNewCar(Car car, String makeName, String modelName, String outletName) throws ModelNotFoundException, ModelDisabledException, OutletNotFoundException
     {
         try {
-            Model model = modelSessionBean.retrieveModelByModelNameAndMake(modelName, makeName);
+            Model model = modelSessionBean.retrieveModelByModelNameAndMake(makeName, modelName);
             
             Outlet outlet = outletSessionBean.retrieveOutletByName(outletName);
             if (model.isIsDisabled()) {
@@ -127,5 +127,19 @@ public class CarSessionBean implements CarSessionBeanRemote, CarSessionBeanLocal
         {
             throw new CarNotFoundException("Car " + license + " does not exist.");
         }
+    }
+    
+    @Override
+    public List<Car> retrieveCarsByModelId(Long modelId) {
+        Query query = em.createQuery("SELECT c FROM Car c WHERE c.model.modelId = :inModelId");
+        query.setParameter("inModelId", modelId);
+        return query.getResultList();
+    }
+    
+    @Override
+    public List<Car> retrieveCarsByCategoryId(Long carCategoryId) {
+        Query query = em.createQuery("SELECT c FROM Car c WHERE c.model.category.categoryId = :inCategoryId");
+        query.setParameter("inCategoryId", carCategoryId);
+        return query.getResultList();
     }
 }

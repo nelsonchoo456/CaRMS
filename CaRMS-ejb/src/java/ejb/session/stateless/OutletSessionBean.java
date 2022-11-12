@@ -6,6 +6,7 @@
 package ejb.session.stateless;
 
 import entity.Outlet;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -62,5 +63,19 @@ public class OutletSessionBean implements OutletSessionBeanRemote, OutletSession
         {
             throw new OutletNotFoundException("Outlet " + outletName + " does not exist.");
         }
+    }
+    
+    @Override
+    public List<Outlet> viewAllOutlets() 
+    {
+        Query query = em.createQuery("SELECT o FROM Outlet o");
+        List<Outlet> outlets = query.getResultList();
+        
+        for (Outlet outlet:outlets) {
+            outlet.getEmployees().size();
+            outlet.getCars().size();
+        }
+        
+        return outlets;
     }
 }

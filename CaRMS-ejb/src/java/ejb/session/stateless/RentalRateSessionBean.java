@@ -7,6 +7,7 @@ package ejb.session.stateless;
 
 import entity.Category;
 import entity.RentalRate;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -84,14 +85,36 @@ public class RentalRateSessionBean implements RentalRateSessionBeanRemote, Renta
             throw new RentalRateNotFoundException("Rental Rate ID not provided for Rental Rate to be updated");
         }
     }
-    
-    
-    
+
     @Override
     public void deleteRentalRate(Long rentalRateId) throws RentalRateNotFoundException
     {
-        RentalRate rentalRate = retrieveRentalRateById(rentalRateId);
-        rentalRate.getCategory().getRentalRates().remove(rentalRate);
-        em.remove(rentalRate);
+        try {
+            RentalRate rentalRate = retrieveRentalRateById(rentalRateId);
+            if (rentalRate.getIsUsed()) {
+                rentalRate.setIsEnabled(false);
+            } else {
+                rentalRate.getCategory().getRentalRates().remove(rentalRate);
+                em.remove(rentalRate);
+            }
+        } catch (RentalRateNotFoundException ex) {
+            throw new RentalRateNotFoundException(ex.getMessage());
+        }
+    }
+    
+    @Override
+    public RentalRate retrieveCheapestRentalRate(Long categoryId, Date currentDate) throws RentalRateNotFoundException
+    {
+        Query query = em.createQuery("SELECT r FROM RentalRate r WHERE (r.category.categoryId = :inCarCategoryId AND r.isEnabled = TRUE) AND (r.startDateTime <= :inCurrentCheckedDate AND r.endDateTime >= :inCurrentCheckedDate) OR (r.category.categoryId = :inCarCategoryId AND r.startDateTime IS NULL AND r.endDateTime IS NULL) ORDER BY r.ratePerDay ASC");
+        
+        query.setParameter("inCurrentCheckedDate", currentDate);
+        query.setParameter("inCarCategoryId", categoryId);
+        List<RentalRate> rentalRates = query.getResultList();
+        System.out.println(rentalRates);
+        
+        if (rentalRates.isEmpty()) {
+            throw new RentalRateNotFoundException("No available rates.");
+        }
+        return rentalRates.get(0);
     }
 }

@@ -6,6 +6,8 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -15,6 +17,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import util.enumeration.UserRoleEnum;
 
 /**
@@ -41,8 +44,12 @@ public class Employee implements Serializable {
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
     private Outlet outlet;
+    
+    @OneToMany(mappedBy = "driver")
+    private List<DispatchRecord> dispatchRecords;
 
     public Employee() {
+        this.dispatchRecords = new ArrayList<DispatchRecord>();
     }
     
 
@@ -51,6 +58,7 @@ public class Employee implements Serializable {
         this.userRoleEnum = userRoleEnum;
         this.username = username;
         this.password = password;
+        this.dispatchRecords = new ArrayList<DispatchRecord>();
     }
     
     
@@ -156,6 +164,20 @@ public class Employee implements Serializable {
      */
     public void setOutlet(Outlet outlet) {
         this.outlet = outlet;
+    }
+
+    /**
+     * @return the dispatchRecords
+     */
+    public List<DispatchRecord> getDispatchRecords() {
+        return dispatchRecords;
+    }
+
+    /**
+     * @param dispatchRecords the dispatchRecords to set
+     */
+    public void setDispatchRecords(List<DispatchRecord> dispatchRecords) {
+        this.dispatchRecords = dispatchRecords;
     }
     
 }

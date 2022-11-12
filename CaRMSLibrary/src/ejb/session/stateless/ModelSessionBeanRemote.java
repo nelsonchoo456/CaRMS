@@ -28,5 +28,5 @@ public interface ModelSessionBeanRemote {
     
     public void deleteModel(Long modelId) throws ModelNotFoundException;
     
-    public Model retrieveModelByModelNameAndMake(String modelName, String makeName) throws ModelNotFoundException;
+    public Model retrieveModelByModelNameAndMake(String makeName, String modelName) throws ModelNotFoundException;
 }

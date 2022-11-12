@@ -6,8 +6,12 @@
 package ejb.session.stateless;
 
 import entity.Category;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 import javax.ejb.Remote;
 import util.exception.CategoryNotFoundException;
+import util.exception.RentalRateNotFoundException;
 
 /**
  *
@@ -21,4 +25,8 @@ public interface CategorySessionBeanRemote {
     public Category retrieveCategoryById(Long id) throws CategoryNotFoundException;
     
     public Category retrieveCategoryByName(String name) throws CategoryNotFoundException;
+    
+    public List<Category> viewAllCategories();
+    
+    public BigDecimal calculateTotalRentalFee(Long categoryId, Date pickUpDateTime, Date returnDateTime) throws RentalRateNotFoundException;
 }

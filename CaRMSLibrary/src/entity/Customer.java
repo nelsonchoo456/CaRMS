@@ -13,6 +13,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 /**
@@ -38,19 +39,22 @@ public class Customer implements Serializable {
     private String creditCardNumber;
     
     @OneToMany(mappedBy = "customer")
-    private List<RentalRecord> rentalRecords;
+    private List<RentalReservation> rentalReservations;
+    
+    @ManyToOne
+    private Partner partner;
     
     public Customer() {
-        this.rentalRecords = new ArrayList<>();
+        this.rentalReservations = new ArrayList<>();
     }
 
-    public Customer(String firstName, String lastName, String email, String password, String creditCardNumber, List<RentalRecord> rentalRecords) {
+    public Customer(String firstName, String lastName, String email, String password, String creditCardNumber, List<RentalReservation> rentalReservations) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.creditCardNumber = creditCardNumber;
-        this.rentalRecords = rentalRecords;
+        this.rentalReservations = rentalReservations;
     }
     
     public Long getCustomerId() {
@@ -115,17 +119,17 @@ public class Customer implements Serializable {
     }
 
     /**
-     * @return the rentalRecords
+     * @return the rentalReservations
      */
-    public List<RentalRecord> getRentalRecords() {
-        return rentalRecords;
+    public List<RentalReservation> getRentalReservations() {
+        return rentalReservations;
     }
 
     /**
-     * @param rentalRecords the rentalRecords to set
+     * @param rentalReservations the rentalReservations to set
      */
-    public void setRentalRecords(List<RentalRecord> rentalRecords) {
-        this.rentalRecords = rentalRecords;
+    public void setRentalReservations(List<RentalReservation> rentalReservations) {
+        this.rentalReservations = rentalReservations;
     }
 
     /**
@@ -168,6 +172,20 @@ public class Customer implements Serializable {
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    /**
+     * @return the partner
+     */
+    public Partner getPartner() {
+        return partner;
+    }
+
+    /**
+     * @param partner the partner to set
+     */
+    public void setPartner(Partner partner) {
+        this.partner = partner;
     }
     
 }

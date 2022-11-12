@@ -41,21 +41,16 @@ public class Model implements Serializable {
     
     @OneToMany(mappedBy = "model")
     private List<Car> cars;
-    
-    @OneToMany(mappedBy = "model")
-    private List<RentalRecord> rentalRecords;
 
     public Model() {
         this.cars = new ArrayList<Car>();
-        this.rentalRecords = new ArrayList<RentalRecord>();
         this.isDisabled = false;
     }
 
-    public Model(String make, String model, Category category) {
+    public Model(String make, String model) {
         this.make = make;
         this.model = model;
         this.isDisabled = false;
-        this.category = category;
     }
 
     public Long getModelId() {
@@ -131,20 +126,6 @@ public class Model implements Serializable {
      */
     public void setCars(List<Car> cars) {
         this.cars = cars;
-    }
-
-    /**
-     * @return the rentalRecords
-     */
-    public List<RentalRecord> getRentalRecords() {
-        return rentalRecords;
-    }
-
-    /**
-     * @param rentalRecords the rentalRecords to set
-     */
-    public void setRentalRecords(List<RentalRecord> rentalRecords) {
-        this.rentalRecords = rentalRecords;
     }
 
     /**

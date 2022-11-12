@@ -7,11 +7,17 @@ package carmsclient;
 
 import ejb.session.stateless.CarSessionBeanRemote;
 import ejb.session.stateless.CategorySessionBeanRemote;
+import ejb.session.stateless.DispatchRecordSessionBeanRemote;
+import ejb.session.stateless.EjbTimerSessionBeanRemote;
 import ejb.session.stateless.EmployeeSessionBeanRemote;
 import ejb.session.stateless.ModelSessionBeanRemote;
 import ejb.session.stateless.OutletSessionBeanRemote;
 import ejb.session.stateless.RentalRateSessionBeanRemote;
+import ejb.session.stateless.RentalReservationSessionBeanRemote;
 import entity.Employee;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 import util.exception.InvalidAccessRightException;
 import util.exception.InvalidLoginCredentialException;
@@ -27,6 +33,9 @@ public class MainApp {
     private ModelSessionBeanRemote modelSessionBeanRemote;
     private CategorySessionBeanRemote categorySessionBeanRemote;
     private CarSessionBeanRemote carSessionBeanRemote;
+    private DispatchRecordSessionBeanRemote dispatchRecordSessionBeanRemote;
+    private RentalReservationSessionBeanRemote rentalReservationSessionBeanRemote;
+    private EjbTimerSessionBeanRemote ejbTimerSessionBeanRemote;
     
     private SalesManagementModule salesManagementModule;
     
@@ -35,14 +44,16 @@ public class MainApp {
     public MainApp() {
     }
 
-    public MainApp(OutletSessionBeanRemote outletSessionBeanRemote, EmployeeSessionBeanRemote employeeSessionBeanRemote, RentalRateSessionBeanRemote rentalRateSessionBeanRemote, ModelSessionBeanRemote modelSessionBeanRemote, CategorySessionBeanRemote categorySessionBeanRemote, CarSessionBeanRemote carSessionBeanRemote) {
+    public MainApp(OutletSessionBeanRemote outletSessionBeanRemote, EmployeeSessionBeanRemote employeeSessionBeanRemote, RentalRateSessionBeanRemote rentalRateSessionBeanRemote, ModelSessionBeanRemote modelSessionBeanRemote, CategorySessionBeanRemote categorySessionBeanRemote, CarSessionBeanRemote carSessionBeanRemote, DispatchRecordSessionBeanRemote dispatchRecordSessionBeanRemote, RentalReservationSessionBeanRemote rentalReservationSessionBeanRemote, EjbTimerSessionBeanRemote ejbTimerSessionBeanRemote) {
         this.outletSessionBeanRemote = outletSessionBeanRemote;
         this.employeeSessionBeanRemote = employeeSessionBeanRemote;
         this.rentalRateSessionBeanRemote = rentalRateSessionBeanRemote;
         this.modelSessionBeanRemote = modelSessionBeanRemote;
         this.categorySessionBeanRemote = categorySessionBeanRemote;
         this.carSessionBeanRemote = carSessionBeanRemote;
-        
+        this.dispatchRecordSessionBeanRemote = dispatchRecordSessionBeanRemote;
+        this.rentalReservationSessionBeanRemote = rentalReservationSessionBeanRemote;
+        this.ejbTimerSessionBeanRemote = ejbTimerSessionBeanRemote;
     }
     
     
@@ -55,10 +66,11 @@ public class MainApp {
         {
             System.out.println("*** Welcome to Merlion Car Rental Management System ***\n");
             System.out.println("1: Login");
-            System.out.println("2: Exit\n");
+            System.out.println("2: Manually Allocate Cars");
+            System.out.println("3: Exit\n");
             response = 0;
             
-            while(response < 1 || response > 2)
+            while(response < 1 || response > 3)
             {
                 System.out.print("> ");
 
@@ -71,7 +83,7 @@ public class MainApp {
                         doLogin();
                         System.out.println("Login successful!\n");
                         
-                        salesManagementModule  = new SalesManagementModule(outletSessionBeanRemote, employeeSessionBeanRemote, rentalRateSessionBeanRemote, modelSessionBeanRemote, categorySessionBeanRemote, carSessionBeanRemote, currentEmployee);
+                        salesManagementModule  = new SalesManagementModule(outletSessionBeanRemote, employeeSessionBeanRemote, rentalRateSessionBeanRemote, modelSessionBeanRemote, categorySessionBeanRemote, carSessionBeanRemote, dispatchRecordSessionBeanRemote, rentalReservationSessionBeanRemote, currentEmployee);
                         menuMain();
                     }
                     catch(InvalidLoginCredentialException ex) 
@@ -79,7 +91,11 @@ public class MainApp {
                         System.out.println("Invalid login credential: " + ex.getMessage() + "\n");
                     }
                 }
-                else if (response == 2)
+                else if (response == 2) 
+                {
+                    doAllocateCarReservations();
+                }
+                else if (response == 3)
                 {
                     break;
                 }
@@ -89,7 +105,7 @@ public class MainApp {
                 }
             }
             
-            if(response == 2)
+            if(response == 3)
             {
                 break;
             }
@@ -118,6 +134,22 @@ public class MainApp {
         }
     }
     
+    private void doAllocateCarReservations() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("*** Merlion CARMS :: Allocating Cars to Reservation of a certain date***\n");
+        SimpleDateFormat sdf = new SimpleDateFormat("d/M/y");
+        System.out.print("Enter Date(DD/MM/YYYY)> ");
+        String inputDate = scanner.nextLine().trim();
+        try {
+            Date date = sdf.parse(inputDate);
+            System.out.println(date);
+            ejbTimerSessionBeanRemote.allocateCarsToCurrentDayReservations(date);
+            System.out.println("*** Merlion CARMS :: Completed Allocation of Cars for reservations on " + inputDate + " ***\n");
+        } catch (ParseException ex) {
+            System.out.println("Invalid date input!\n");
+        }
+    }
+    
     private void menuMain()
     {
         Scanner scanner = new Scanner(System.in);
@@ -129,10 +161,11 @@ public class MainApp {
             System.out.println("You are login as " + currentEmployee.getName() + " with " + currentEmployee.getUserRoleEnum().toString() + " rights\n");
             System.out.println("1: Sales Management");
             System.out.println("2: Operations Management");
-            System.out.println("3: Logout\n");
+            System.out.println("3: Customer Service");
+            System.out.println("4: Logout\n");
             response = 0;
             
-            while(response < 1 || response > 3)
+            while(response < 1 || response > 4)
             {
                 System.out.print("> ");
 
@@ -157,7 +190,18 @@ public class MainApp {
                         System.out.println("Invalid option, please try again!: " + ex.getMessage() + "\n");
                     }
                 }
-                else if (response == 3)
+                else if(response == 3)
+                {
+                    try
+                    {
+                        salesManagementModule.menuCustomerService();
+                    }
+                    catch (InvalidAccessRightException ex)
+                    {
+                        System.out.println("Invalid option, please try again!: " + ex.getMessage() + "\n");
+                    }
+                }
+                else if (response == 4)
                 {
                     break;
                 }
@@ -167,7 +211,7 @@ public class MainApp {
                 }
             }
             
-            if(response == 3)
+            if(response == 4)
             {
                 break;
             }

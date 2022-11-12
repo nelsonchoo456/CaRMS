@@ -23,4 +23,6 @@ public interface EmployeeSessionBeanRemote {
     public Employee retrieveEmployeeByUsername(String username) throws EmployeeNotFoundException;
     
     public Employee employeeLogin(String username, String password) throws InvalidLoginCredentialException;
+    
+    public Employee retrieveEmployeeById(Long employeeId) throws EmployeeNotFoundException;
 }

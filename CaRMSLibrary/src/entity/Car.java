@@ -18,6 +18,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import util.enumeration.CarStatusEnum;
 
 /**
@@ -41,21 +42,18 @@ public class Car implements Serializable {
     @JoinColumn(nullable = false)
     private Model model;
     
-    @OneToMany(mappedBy = "car")
-    private List<RentalRecord> rentalRecords; //no initialisation for now
+    @OneToOne
+    private RentalReservation rentalReservation;
     
     @ManyToOne
     private Outlet outlet;
 
     public Car() {
-        // this.rentalRecords = new ArrayList<RentalRecord>();
     }
 
-    public Car(String licensePlateNumber, CarStatusEnum status, Model model) {
+    public Car(String licensePlateNumber, CarStatusEnum status) {
         this.licensePlateNumber = licensePlateNumber;
         this.status = status;
-        this.model = model;
-        // this.rentalRecords = new ArrayList<RentalRecord>();
     }
     
     
@@ -147,6 +145,20 @@ public class Car implements Serializable {
      */
     public void setOutlet(Outlet outlet) {
         this.outlet = outlet;
+    }
+
+    /**
+     * @return the rentalReservation
+     */
+    public RentalReservation getRentalReservation() {
+        return rentalReservation;
+    }
+
+    /**
+     * @param rentalReservation the rentalReservation to set
+     */
+    public void setRentalReservation(RentalReservation rentalReservation) {
+        this.rentalReservation = rentalReservation;
     }
     
 }

@@ -7,17 +7,22 @@ package carmsclient;
 
 import ejb.session.stateless.CarSessionBeanRemote;
 import ejb.session.stateless.CategorySessionBeanRemote;
+import ejb.session.stateless.DispatchRecordSessionBeanRemote;
 import ejb.session.stateless.EmployeeSessionBeanRemote;
 import ejb.session.stateless.ModelSessionBeanRemote;
 import ejb.session.stateless.OutletSessionBeanRemote;
 import ejb.session.stateless.RentalRateSessionBeanRemote;
+import ejb.session.stateless.RentalReservationSessionBeanRemote;
 import entity.Car;
+import entity.DispatchRecord;
 import entity.Employee;
 import entity.Model;
 import entity.RentalRate;
+import entity.RentalReservation;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import util.enumeration.CarStatusEnum;
@@ -25,11 +30,16 @@ import util.enumeration.RentalRateTypeEnum;
 import util.enumeration.UserRoleEnum;
 import util.exception.CarNotFoundException;
 import util.exception.CategoryNotFoundException;
+import util.exception.DispatchRecordNotFoundException;
+import util.exception.DriverNotWorkingInSameOutletException;
+import util.exception.EmployeeNotFoundException;
 import util.exception.InvalidAccessRightException;
 import util.exception.ModelDisabledException;
 import util.exception.ModelNotFoundException;
 import util.exception.OutletNotFoundException;
 import util.exception.RentalRateNotFoundException;
+import util.exception.RentalReservationNotFoundException;
+import util.exception.UnpaidRentalReservationException;
 
 /**
  *
@@ -43,20 +53,24 @@ public class SalesManagementModule {
     private ModelSessionBeanRemote modelSessionBeanRemote;
     private CategorySessionBeanRemote categorySessionBeanRemote;
     private CarSessionBeanRemote carSessionBeanRemote;
+    private DispatchRecordSessionBeanRemote dispatchRecordSessionBeanRemote;
+    private RentalReservationSessionBeanRemote rentalReservationSessionBeanRemote;
     
     private Employee currentEmployee;
 
     public SalesManagementModule() {
     }
 
-    public SalesManagementModule(OutletSessionBeanRemote outletSessionBeanRemote, EmployeeSessionBeanRemote employeeSessionBeanRemote, RentalRateSessionBeanRemote rentalRateSessionBeanRemote, ModelSessionBeanRemote modelSessionBeanRemote, CategorySessionBeanRemote categorySessionBeanRemote, CarSessionBeanRemote carSessionBeanRemote, Employee currentEmployee) {
+    public SalesManagementModule(OutletSessionBeanRemote outletSessionBeanRemote, EmployeeSessionBeanRemote employeeSessionBeanRemote, RentalRateSessionBeanRemote rentalRateSessionBeanRemote, ModelSessionBeanRemote modelSessionBeanRemote, CategorySessionBeanRemote categorySessionBeanRemote, CarSessionBeanRemote carSessionBeanRemote, DispatchRecordSessionBeanRemote dispatchRecordSessionBeanRemote, RentalReservationSessionBeanRemote rentalReservationSessionBeanRemote, Employee currentEmployee) {
         this.outletSessionBeanRemote = outletSessionBeanRemote;
         this.employeeSessionBeanRemote = employeeSessionBeanRemote;
         this.rentalRateSessionBeanRemote = rentalRateSessionBeanRemote;
         this.modelSessionBeanRemote = modelSessionBeanRemote;
         this.categorySessionBeanRemote = categorySessionBeanRemote;
         this.carSessionBeanRemote = carSessionBeanRemote;
+        this.dispatchRecordSessionBeanRemote = dispatchRecordSessionBeanRemote;
         this.currentEmployee = currentEmployee;
+        this.rentalReservationSessionBeanRemote = rentalReservationSessionBeanRemote;
     }
     
     public void menuSalesManagement() throws InvalidAccessRightException
@@ -185,11 +199,11 @@ public class SalesManagementModule {
         Scanner scanner = new Scanner(System.in);
         
         List<RentalRate> rentalRates = rentalRateSessionBeanRemote.viewAllRentalRates();
-        System.out.printf("%19s%22s%22s%22s%22s%22s\n", "Rental Rate ID", "Name", "Rental Rate Type", "Rate per Day", "Start Date", "End Date");
+        System.out.printf("%19s%35s%35s%35s%35s%35s\n", "Rental Rate ID", "Name", "Rental Rate Type", "Rate per Day", "Start Date", "End Date");
 
         for(RentalRate rentalRate:rentalRates)
         {
-            System.out.printf("%19s%22s%22s%22s%22s%22s\n", rentalRate.getRateId(), rentalRate.getName(), rentalRate.getRentalRateType(), rentalRate.getRatePerDay(), rentalRate.getStartDateTime(), rentalRate.getEndDateTime());
+            System.out.printf("%19s%35s%35s%35s%35s%35s\n", rentalRate.getRateId(), rentalRate.getName(), rentalRate.getRentalRateType(), rentalRate.getRatePerDay(), rentalRate.getStartDateTime(), rentalRate.getEndDateTime());
         }        
         
         System.out.print("Press any key to continue...> ");
@@ -208,8 +222,8 @@ public class SalesManagementModule {
         
         try {
             RentalRate rentalRate = rentalRateSessionBeanRemote.retrieveRentalRateById(id);
-            System.out.printf("%19s%22s%22s%22s%22s%22s\n", "Rental Rate ID", "Name", "Rental Rate Type", "Rate per Day", "Start Date", "End Date");
-            System.out.printf("%19s%22s%22s%22s%22s\n", rentalRate.getRateId(), rentalRate.getName(), rentalRate.getRentalRateType(), rentalRate.getRatePerDay(), rentalRate.getStartDateTime(), rentalRate.getEndDateTime());
+            System.out.printf("%19s%35s%35s%35s%35s%35s\n", "Rental Rate ID", "Name", "Rental Rate Type", "Rate per Day", "Start Date", "End Date");
+            System.out.printf("%19s%35s%35s%35s%35s%35s\n", rentalRate.getRateId(), rentalRate.getName(), rentalRate.getRentalRateType(), rentalRate.getRatePerDay(), rentalRate.getStartDateTime(), rentalRate.getEndDateTime());
             System.out.println("------------------------");
             System.out.println("1: Update Rental Rate");
             System.out.println("2: Delete Rental Rate");
@@ -338,10 +352,13 @@ public class SalesManagementModule {
             System.out.println("5: Create New Car");
             System.out.println("6: View All Cars");
             System.out.println("7: View Car Details");
-            System.out.println("8: Back\n");
+            System.out.println("8: View Transit Driver Dispatch Records for Current Day Reservations");
+            System.out.println("9: Assign Transit Driver");
+            System.out.println("10: Update Transit As Completed");
+            System.out.println("11: Back\n");
             response = 0;
             
-            while(response < 1 || response > 8)
+            while(response < 1 || response > 11)
             {
                 System.out.print("> ");
 
@@ -377,6 +394,18 @@ public class SalesManagementModule {
                 }
                 else if(response == 8)
                 {
+                    doViewTransitDriverDispatchRecords();
+                }
+                else if(response == 9)
+                {
+                    doAssignTransitDriver();
+                }
+                else if(response == 10)
+                {
+                    doUpdateTransitAsCompleted();
+                }
+                else if(response == 11)
+                {
                     break;
                 }
                 else
@@ -385,7 +414,7 @@ public class SalesManagementModule {
                 }
             }
             
-            if(response == 8)
+            if(response == 11)
             {
                 break;
             }
@@ -442,7 +471,7 @@ public class SalesManagementModule {
         System.out.print("Enter Model> ");
         String modelName = scanner.nextLine().trim();
         try {
-            model = modelSessionBeanRemote.retrieveModelByModelNameAndMake(modelName, makeName);
+            model = modelSessionBeanRemote.retrieveModelByModelNameAndMake(makeName, modelName);
             System.out.print("Enter New Model (blank if no change)> ");
             input = scanner.nextLine().trim();
             if(input.length() > 0)
@@ -532,7 +561,7 @@ public class SalesManagementModule {
         }
         
         try {
-            Long newCarId = carSessionBeanRemote.createNewCar(newCar, modelName, makeName, outletName);
+            Long newCarId = carSessionBeanRemote.createNewCar(newCar, makeName, modelName, outletName);
             System.out.println("New car created successfully!: " + newCarId.toString() + "\n");
         } catch (ModelNotFoundException ex) {
             System.out.println("An error has occurred while creating the car!: The model does not exist\n");
@@ -610,15 +639,17 @@ public class SalesManagementModule {
         
         System.out.print("Enter Status (1 for Available, 2 for On Rental, 3 for Repair) (blank if no change)> ");
         input = scanner.nextLine().trim();
-        if (input.equals("1")) {
-            car.setStatus(CarStatusEnum.AVAILABLE);
-        } else if (input.equals("2")) {
-            car.setStatus(CarStatusEnum.ON_RENTAL);
-        } else if (input.equals("3")) {
-            car.setStatus(CarStatusEnum.REPAIR);
-        } else {
-            System.out.println("Invalid Status.");
-            return;
+        if (input.length() > 0) {
+            if (input.equals("1")) {
+                car.setStatus(CarStatusEnum.AVAILABLE);
+            } else if (input.equals("2")) {
+                car.setStatus(CarStatusEnum.ON_RENTAL);
+            } else if (input.equals("3")) {
+                car.setStatus(CarStatusEnum.REPAIR);
+            } else {
+                System.out.println("Invalid Status.");
+                return;
+            }
         }
         
         try {
@@ -645,6 +676,253 @@ public class SalesManagementModule {
             } catch (CarNotFoundException ex) {
                 System.out.println(ex.getMessage());
             }
+        }
+    }
+    
+    private void doViewTransitDriverDispatchRecords()
+    {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("*** Merlion CARMS :: Operations Management :: View Transit Driver Dispatch Records for Current Day Reservations***\n");
+        System.out.print("Enter Date (DD/MM/YYYY) > ");
+        String inputDate = scanner.nextLine().trim();
+        
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy");
+            Date date = inputFormat.parse(inputDate);
+            
+            System.out.println("Dispatch records for " + currentEmployee.getOutlet().getOutletName() + " on " + inputDate + "\n");
+            List<DispatchRecord> dispatchRecords = dispatchRecordSessionBeanRemote.retrieveDispatchRecordsByOutletId(date, currentEmployee.getOutlet().getOutletId());
+            System.out.printf("%12s%32s%32s%20s%20s\n", "Record ID", "Destination Outlet", "Driver", "Status", "Transit Time");
+            
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            for (DispatchRecord dispatchRecord : dispatchRecords) {
+                String isCompleted = "Not Completed";
+                if (dispatchRecord.getIsCompleted()) {
+                    isCompleted = "Completed";
+                }
+                String dispatchDriverName = "Unassigned";
+                if (dispatchRecord.getDriver() != null) {
+                    dispatchDriverName = dispatchRecord.getDriver().getName();
+                }
+                
+                String transitDate = sdf.format(dispatchRecord.getTransitDate());
+                System.out.printf("%12s%32s%32s%20s%20s\n", dispatchRecord.getDispatchRecordId(), dispatchRecord.getRentalReservation().getPickupOutlet().getOutletName(), dispatchDriverName, isCompleted, transitDate);
+            }
+        } catch (ParseException ex) {
+            System.out.println("Invalid date input!");
+        }
+        System.out.print("Press any key to continue...> ");
+        scanner.nextLine();
+    }
+    
+    private void doAssignTransitDriver()
+    {
+        Scanner scanner = new Scanner(System.in);
+        try {
+            System.out.println("*** Merlion CARMS :: Operations Management :: Assign Transit Driver***\n");
+            System.out.print("Enter Date (DD/MM/YYYY) > ");
+            String inputDate = scanner.nextLine().trim();
+            System.out.println("Dispatch records for " + currentEmployee.getOutlet().getOutletName() + " on " + inputDate + "\n");
+            SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy");
+            Date date = inputFormat.parse(inputDate);
+            List<DispatchRecord> dispatchRecords = dispatchRecordSessionBeanRemote.retrieveDispatchRecordsByOutletId(date, currentEmployee.getOutlet().getOutletId());
+            if (dispatchRecords.isEmpty()) {
+                System.out.println("No dispatch records to be assigned!");
+            } else {
+                System.out.printf("%12s%32s%32s%20s%20s\n", "Record ID", "Destination Outlet", "Driver", "Status", "Transit Time");
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                for (DispatchRecord dispatchRecord : dispatchRecords) {
+                    String isCompleted = "Not Completed";
+                    if (dispatchRecord.getIsCompleted()) {
+                        isCompleted = "Completed";
+                    }
+                    String dispatchDriverName = "Unassigned";
+                    if (dispatchRecord.getDriver() != null) {
+                        dispatchDriverName = dispatchRecord.getDriver().getName();
+                    }
+                    String transitDate = sdf.format(dispatchRecord.getTransitDate());
+                    System.out.printf("%12s%32s%32s%20s%20s\n",
+                            dispatchRecord.getDispatchRecordId(), dispatchRecord.getRentalReservation().getPickupOutlet().getOutletName(), dispatchDriverName, isCompleted, transitDate);
+                }
+                System.out.print("Enter Transit Driver Dispatch Record ID> ");
+                Long dispatchRecordId = scanner.nextLong();
+                System.out.print("Enter Dispatch Driver ID> ");
+                Long dispatchDriverId = scanner.nextLong();
+                scanner.nextLine();
+                dispatchRecordSessionBeanRemote.assignDriver(dispatchDriverId, dispatchRecordId);
+                System.out.println("Succesfully assigned transit driver " + dispatchDriverId + " to a dispatch record " + dispatchRecordId);
+            }
+        } catch (DriverNotWorkingInSameOutletException ex) {
+            System.out.println("Driver is not working in the same outlet as the car is currently at!");
+        } catch (EmployeeNotFoundException ex) {
+            System.out.println("Employee not found!");
+        } catch (DispatchRecordNotFoundException ex) {
+            System.out.println("Transit driver dispatch record not found!");
+        } catch (ParseException ex) {
+            System.out.println("Invalid Date Format");
+        }
+        System.out.print("Press any key to continue...> ");
+        scanner.nextLine();
+    }
+    
+    private void doUpdateTransitAsCompleted() {
+        Scanner scanner = new Scanner(System.in);
+        try {
+            System.out.println("*** Merlion CARMS :: Operations Management :: Update Transit As Completed***\n");
+            System.out.print("Enter Date (DD/MM/YYYY) > ");
+            String inputDate = scanner.nextLine().trim();
+            System.out.println("Dispatch records for " + currentEmployee.getOutlet().getOutletName() + " on " + inputDate + "\n");
+            SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy");
+            Date date = inputFormat.parse(inputDate);
+            List<DispatchRecord> dispatchRecords = dispatchRecordSessionBeanRemote.retrieveDispatchRecordsByOutletId(date, currentEmployee.getOutlet().getOutletId());
+            if (dispatchRecords.isEmpty()) {
+                System.out.println("No dispatch records to be completed!");
+            } else {
+                System.out.printf("%12s%32s%32s%20s%20s\n", "Record ID", "Destination Outlet", "Driver", "Status", "Transit Time");
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                for (DispatchRecord dispatchRecord : dispatchRecords) {
+                    String isCompleted = "Not Completed";
+                    if (dispatchRecord.getIsCompleted()) {
+                        isCompleted = "Completed";
+                    }
+                    String dispatchDriverName = "Unassigned";
+                    if (dispatchRecord.getDriver()!= null) {
+                        dispatchDriverName = dispatchRecord.getDriver().getName();
+                    }
+                    String transitDate = sdf.format(dispatchRecord.getTransitDate());
+                    System.out.printf("%12s%32s%32s%20s%20s\n", dispatchRecord.getDispatchRecordId(), dispatchRecord.getRentalReservation().getPickupOutlet().getOutletName(), dispatchDriverName, isCompleted, transitDate);
+                }
+                System.out.print("Enter Transit Dispatch Record ID> ");
+                Long dispatchRecordId = scanner.nextLong();
+                scanner.nextLine();
+                dispatchRecordSessionBeanRemote.updateTransitAsCompleted(dispatchRecordId);
+                System.out.println("Successfully updated transit record id: " + dispatchRecordId + " as completed!");
+            }
+        } catch (DispatchRecordNotFoundException ex) {
+            System.out.println("Transit driver dispatch record not found!");
+        } catch (ParseException ex) {
+            System.out.println("Invalid date format!");
+        }
+        System.out.print("Press any key to continue...> ");
+        scanner.nextLine();
+    }
+    
+    public void menuCustomerService() throws InvalidAccessRightException
+    {
+        if(currentEmployee.getUserRoleEnum() != UserRoleEnum.CUSTOMER_SERVICE_EXECUTIVE)
+        {
+            if (currentEmployee.getUserRoleEnum() != UserRoleEnum.ADMINISTRATOR)
+            {
+             throw new InvalidAccessRightException("You don't have CUSTOMER SERVICE EXECUTIVE rights to access the Sales Management module.");   
+            }
+        }
+        
+        Scanner scanner = new Scanner(System.in);
+        Integer response = 0;
+        
+        while(true)
+        {
+            System.out.println("*** Merlion CARMS :: Customer Service ***\n");
+            System.out.println("1: Pickup Car");
+            System.out.println("2: Return Car");
+            System.out.println("3: Back \n");
+            response = 0;
+            
+            while(response < 1 || response > 3)
+            {
+                System.out.print("> ");
+
+                response = scanner.nextInt();
+
+                if(response == 1)
+                {
+                    doPickupCar();
+                }
+                else if(response == 2)
+                {
+                    doReturnCar();
+                }
+                else if(response == 3)
+                {
+                    break;
+                }
+                else
+                {
+                    System.out.println("Invalid option, please try again!\n");                
+                }
+            }
+            
+            if(response == 3)
+            {
+                break;
+            }
+        }
+    }
+    
+    private void doPickupCar()
+    {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("*** Merlion CARMS :: Customer Service :: Pickup Car***\n");
+        List<RentalReservation> rentalReservations = rentalReservationSessionBeanRemote.retrieveRentalReservationsByPickupOutlet(currentEmployee.getOutlet().getOutletId());
+        if (rentalReservations.isEmpty()) {
+            System.out.println("No cars to be picked up!");
+        } else {
+            try {
+                System.out.printf("%4s%20s%20s\n", "ID", "Start Date", "End Date");
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                for (RentalReservation rentalReservation : rentalReservations) {
+                    System.out.printf("%4s%20s%20s\n", rentalReservation.getRentalReservationId(), sdf.format(rentalReservation.getStartDateTime()), sdf.format(rentalReservation.getEndDateTime()));
+                }
+                System.out.print("Enter Rental Reservation ID> ");
+                Long rentalReservationId = scanner.nextLong();
+                scanner.nextLine();
+                RentalReservation rentalReservation = rentalReservationSessionBeanRemote.retrieveRentalReservationByRentalReservationId(rentalReservationId);
+                if (!rentalReservation.isPaid()) {
+                    System.out.print("Pay rental fee? (Enter 'Y' to pay)> ");
+                    String input = scanner.nextLine().trim();
+                    if (!input.equals("Y")) {
+                        throw new UnpaidRentalReservationException("Please pay for the rental reservation ID: " + rentalReservationId + " !");
+                    } else {
+                        System.out.println("Charged " + rentalReservation.getPrice().toString() + " to credit card: " + rentalReservation.getCustomer().getCreditCardNumber());
+                    }
+                }
+                rentalReservationSessionBeanRemote.pickupCar(rentalReservationId);
+                System.out.println("Car successfully picked up by customer");
+            } catch (RentalReservationNotFoundException ex) {
+                System.out.println(ex.getMessage());
+            } catch (UnpaidRentalReservationException ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+        System.out.print("Press any key to continue...> ");
+        scanner.nextLine();
+    }
+    
+    private void doReturnCar() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("*** CarMS Management Client :: Sales Management :: Return Car***\n");
+        List<RentalReservation> rentalReservations = rentalReservationSessionBeanRemote.retrieveRentalReservationsByReturnOutlet(currentEmployee.getOutlet().getOutletId());
+
+        if (rentalReservations.isEmpty()) {
+            System.out.println("No cars to be returned!");
+        } else {
+            System.out.printf("%4s%20s%20s\n", "ID", "Start Date", "End Date");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            for (RentalReservation rentalReservation : rentalReservations) {
+                System.out.printf("%4s%20s%20s\n", rentalReservation.getRentalReservationId(), sdf.format(rentalReservation.getStartDateTime()), sdf.format(rentalReservation.getEndDateTime()));
+            }
+            System.out.print("Enter Rental Reservation ID> ");
+            Long rentalReservationId = scanner.nextLong();
+            scanner.nextLine();
+
+            try {
+                rentalReservationSessionBeanRemote.returnCar(rentalReservationId);
+                System.out.println("Car returned by customer");
+            } catch (RentalReservationNotFoundException ex) {
+                System.out.println("No Rental Reservation of ID: " + rentalReservationId);
+            }
+            System.out.print("Press any key to continue...> ");
+            scanner.nextLine();
         }
     }
 }

@@ -90,4 +90,14 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
         }
     }
     
+    public Employee retrieveEmployeeById(Long employeeId) throws EmployeeNotFoundException
+    {
+        Employee employee = em.find(Employee.class, employeeId);
+        
+        if (employee != null) {
+            return employee;
+        } else {
+            throw new EmployeeNotFoundException("Emplyoee " + employeeId + " does not exist.");
+        }
+    }
 }
