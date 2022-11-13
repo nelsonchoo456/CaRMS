@@ -20,6 +20,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -232,6 +233,7 @@ public class RentalReservation implements Serializable {
     /**
      * @return the model
      */
+    @XmlTransient
     public Model getModel() {
         return model;
     }
@@ -246,6 +248,7 @@ public class RentalReservation implements Serializable {
     /**
      * @return the category
      */
+    @XmlTransient
     public Category getCategory() {
         return category;
     }
@@ -260,6 +263,7 @@ public class RentalReservation implements Serializable {
     /**
      * @return the customer
      */
+    @XmlTransient
     public Customer getCustomer() {
         return customer;
     }
@@ -274,6 +278,7 @@ public class RentalReservation implements Serializable {
     /**
      * @return the car
      */
+    @XmlTransient
     public Car getCar() {
         return car;
     }
@@ -288,6 +293,7 @@ public class RentalReservation implements Serializable {
     /**
      * @return the pickupOutlet
      */
+    @XmlTransient
     public Outlet getPickupOutlet() {
         return pickupOutlet;
     }
@@ -302,6 +308,7 @@ public class RentalReservation implements Serializable {
     /**
      * @return the returnOutlet
      */
+    @XmlTransient
     public Outlet getReturnOutlet() {
         return returnOutlet;
     }
@@ -316,6 +323,7 @@ public class RentalReservation implements Serializable {
     /**
      * @return the dispatchRecord
      */
+    @XmlTransient
     public DispatchRecord getDispatchRecord() {
         return dispatchRecord;
     }
@@ -330,6 +338,7 @@ public class RentalReservation implements Serializable {
     /**
      * @return the rentalRate
      */
+    @XmlTransient
     public RentalRate getRentalRate() {
         return rentalRate;
     }
@@ -339,6 +348,21 @@ public class RentalReservation implements Serializable {
      */
     public void setRentalRate(RentalRate rentalRate) {
         this.rentalRate = rentalRate;
+    }
+
+    /**
+     * @return the partner
+     */
+    @XmlTransient
+    public Partner getPartner() {
+        return partner;
+    }
+
+    /**
+     * @param partner the partner to set
+     */
+    public void setPartner(Partner partner) {
+        this.partner = partner;
     }
 
     

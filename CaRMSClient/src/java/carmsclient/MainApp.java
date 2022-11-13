@@ -66,11 +66,10 @@ public class MainApp {
         {
             System.out.println("*** Welcome to Merlion Car Rental Management System ***\n");
             System.out.println("1: Login");
-            System.out.println("2: Manually Allocate Cars");
-            System.out.println("3: Exit\n");
+            System.out.println("2: Exit\n");
             response = 0;
             
-            while(response < 1 || response > 3)
+            while(response < 1 || response > 2)
             {
                 System.out.print("> ");
 
@@ -83,7 +82,7 @@ public class MainApp {
                         doLogin();
                         System.out.println("Login successful!\n");
                         
-                        salesManagementModule  = new SalesManagementModule(outletSessionBeanRemote, employeeSessionBeanRemote, rentalRateSessionBeanRemote, modelSessionBeanRemote, categorySessionBeanRemote, carSessionBeanRemote, dispatchRecordSessionBeanRemote, rentalReservationSessionBeanRemote, currentEmployee);
+                        salesManagementModule  = new SalesManagementModule(outletSessionBeanRemote, employeeSessionBeanRemote, rentalRateSessionBeanRemote, modelSessionBeanRemote, categorySessionBeanRemote, carSessionBeanRemote, dispatchRecordSessionBeanRemote, rentalReservationSessionBeanRemote, ejbTimerSessionBeanRemote, currentEmployee);
                         menuMain();
                     }
                     catch(InvalidLoginCredentialException ex) 
@@ -91,11 +90,7 @@ public class MainApp {
                         System.out.println("Invalid login credential: " + ex.getMessage() + "\n");
                     }
                 }
-                else if (response == 2) 
-                {
-                    doAllocateCarReservations();
-                }
-                else if (response == 3)
+                else if (response == 2)
                 {
                     break;
                 }
@@ -105,7 +100,7 @@ public class MainApp {
                 }
             }
             
-            if(response == 3)
+            if(response == 2)
             {
                 break;
             }
@@ -131,22 +126,6 @@ public class MainApp {
         else
         {
             throw new InvalidLoginCredentialException("Missing login credential!");
-        }
-    }
-    
-    private void doAllocateCarReservations() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("*** Merlion CARMS :: Allocating Cars to Reservation of a certain date***\n");
-        SimpleDateFormat sdf = new SimpleDateFormat("d/M/y");
-        System.out.print("Enter Date(DD/MM/YYYY)> ");
-        String inputDate = scanner.nextLine().trim();
-        try {
-            Date date = sdf.parse(inputDate);
-            System.out.println(date);
-            ejbTimerSessionBeanRemote.allocateCarsToCurrentDayReservations(date);
-            System.out.println("*** Merlion CARMS :: Completed Allocation of Cars for reservations on " + inputDate + " ***\n");
-        } catch (ParseException ex) {
-            System.out.println("Invalid date input!\n");
         }
     }
     

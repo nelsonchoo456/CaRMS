@@ -10,6 +10,7 @@ import javax.ejb.Remote;
 import util.exception.CustomerNotFoundException;
 import util.exception.InputDataValidationException;
 import util.exception.InvalidLoginCredentialException;
+import util.exception.PartnerNotFoundException;
 
 /**
  *
@@ -25,4 +26,6 @@ public interface CustomerSessionBeanRemote {
     public Customer customerLogin(String email, String password) throws InvalidLoginCredentialException;
     
     public Customer retrieveCustomerById(Long id) throws CustomerNotFoundException;
+    
+    public Long createNewCustomerWithPartner(Long partnerId, Customer newCustomer) throws PartnerNotFoundException, InputDataValidationException;
 }

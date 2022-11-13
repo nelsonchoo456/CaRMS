@@ -8,6 +8,7 @@ package carmsclient;
 import ejb.session.stateless.CarSessionBeanRemote;
 import ejb.session.stateless.CategorySessionBeanRemote;
 import ejb.session.stateless.DispatchRecordSessionBeanRemote;
+import ejb.session.stateless.EjbTimerSessionBeanRemote;
 import ejb.session.stateless.EmployeeSessionBeanRemote;
 import ejb.session.stateless.ModelSessionBeanRemote;
 import ejb.session.stateless.OutletSessionBeanRemote;
@@ -61,6 +62,7 @@ public class SalesManagementModule {
     private CarSessionBeanRemote carSessionBeanRemote;
     private DispatchRecordSessionBeanRemote dispatchRecordSessionBeanRemote;
     private RentalReservationSessionBeanRemote rentalReservationSessionBeanRemote;
+    private EjbTimerSessionBeanRemote ejbTimerSessionBeanRemote;
     
     private Employee currentEmployee;
     
@@ -72,7 +74,7 @@ public class SalesManagementModule {
         this.validator = validatorFactory.getValidator();
     }
 
-    public SalesManagementModule(OutletSessionBeanRemote outletSessionBeanRemote, EmployeeSessionBeanRemote employeeSessionBeanRemote, RentalRateSessionBeanRemote rentalRateSessionBeanRemote, ModelSessionBeanRemote modelSessionBeanRemote, CategorySessionBeanRemote categorySessionBeanRemote, CarSessionBeanRemote carSessionBeanRemote, DispatchRecordSessionBeanRemote dispatchRecordSessionBeanRemote, RentalReservationSessionBeanRemote rentalReservationSessionBeanRemote, Employee currentEmployee) {
+    public SalesManagementModule(OutletSessionBeanRemote outletSessionBeanRemote, EmployeeSessionBeanRemote employeeSessionBeanRemote, RentalRateSessionBeanRemote rentalRateSessionBeanRemote, ModelSessionBeanRemote modelSessionBeanRemote, CategorySessionBeanRemote categorySessionBeanRemote, CarSessionBeanRemote carSessionBeanRemote, DispatchRecordSessionBeanRemote dispatchRecordSessionBeanRemote, RentalReservationSessionBeanRemote rentalReservationSessionBeanRemote, EjbTimerSessionBeanRemote ejbTimerSessionBeanRemote, Employee currentEmployee) {
         this.outletSessionBeanRemote = outletSessionBeanRemote;
         this.employeeSessionBeanRemote = employeeSessionBeanRemote;
         this.rentalRateSessionBeanRemote = rentalRateSessionBeanRemote;
@@ -82,6 +84,7 @@ public class SalesManagementModule {
         this.dispatchRecordSessionBeanRemote = dispatchRecordSessionBeanRemote;
         this.currentEmployee = currentEmployee;
         this.rentalReservationSessionBeanRemote = rentalReservationSessionBeanRemote;
+        this.ejbTimerSessionBeanRemote = ejbTimerSessionBeanRemote;
         
         this.validatorFactory = Validation.buildDefaultValidatorFactory();
         this.validator = validatorFactory.getValidator();
@@ -106,10 +109,11 @@ public class SalesManagementModule {
             System.out.println("1: Create Rental Rate");
             System.out.println("2: View All Rental Rates");
             System.out.println("3: View Rental Rate Details");
-            System.out.println("4: Back\n");
+            System.out.println("4: Manually Allocate Cars");
+            System.out.println("5: Back\n");
             response = 0;
             
-            while(response < 1 || response > 4)
+            while(response < 1 || response > 5)
             {
                 System.out.print("> ");
 
@@ -129,6 +133,10 @@ public class SalesManagementModule {
                 }
                 else if(response == 4)
                 {
+                    doAllocateCarReservations();
+                }
+                else if(response == 5)
+                {
                     break;
                 }
                 else
@@ -137,7 +145,7 @@ public class SalesManagementModule {
                 }
             }
             
-            if(response == 4)
+            if(response == 5)
             {
                 break;
             }
@@ -998,6 +1006,22 @@ public class SalesManagementModule {
             }
             System.out.print("Press any key to continue...> ");
             scanner.nextLine();
+        }
+    }
+    
+    private void doAllocateCarReservations() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("*** Merlion CARMS :: Allocating Cars to Reservation of a certain date***\n");
+        SimpleDateFormat sdf = new SimpleDateFormat("d/M/y");
+        System.out.print("Enter Date(DD/MM/YYYY)> ");
+        String inputDate = scanner.nextLine().trim();
+        try {
+            Date date = sdf.parse(inputDate);
+            System.out.println(date);
+            ejbTimerSessionBeanRemote.allocateCarsToCurrentDayReservations(date);
+            System.out.println("*** Merlion CARMS :: Completed Allocation of Cars for reservations on " + inputDate + " ***\n");
+        } catch (ParseException ex) {
+            System.out.println("Invalid date input!\n");
         }
     }
 }

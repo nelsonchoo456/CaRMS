@@ -15,6 +15,7 @@ import util.exception.CustomerNotFoundException;
 import util.exception.InputDataValidationException;
 import util.exception.ModelNotFoundException;
 import util.exception.OutletNotFoundException;
+import util.exception.PartnerNotFoundException;
 import util.exception.RentalReservationNotFoundException;
 
 /**
@@ -45,5 +46,9 @@ public interface RentalReservationSessionBeanLocal {
     public void returnCar(Long reservationId) throws RentalReservationNotFoundException;
 
     public List<RentalReservation> retrieveRentalReservationsByReturnOutlet(Long outletId);
+
+    public Long createNewPartnerRentalReservation(Long carCategoryId, Long partnerId, Long modelId, Long customerId, Long pickupOutletId, Long returnOutletId, RentalReservation newRentalReservation) throws OutletNotFoundException, CustomerNotFoundException, InputDataValidationException, CategoryNotFoundException, ModelNotFoundException, PartnerNotFoundException;
+
+    public List<RentalReservation> retrievePartnerRentalReservations(Long partnerId);
     
 }

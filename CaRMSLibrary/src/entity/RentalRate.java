@@ -23,6 +23,7 @@ import javax.validation.constraints.Digits;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlTransient;
 import util.enumeration.RentalRateTypeEnum;
 
 /**
@@ -157,6 +158,7 @@ public class RentalRate implements Serializable {
     /**
      * @return the category
      */
+    @XmlTransient
     public Category getCategory() {
         return category;
     }

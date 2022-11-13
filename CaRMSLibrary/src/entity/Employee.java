@@ -20,6 +20,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlTransient;
 import util.enumeration.UserRoleEnum;
 
 /**
@@ -164,6 +165,7 @@ public class Employee implements Serializable {
     /**
      * @return the outlet
      */
+    @XmlTransient
     public Outlet getOutlet() {
         return outlet;
     }
@@ -178,6 +180,7 @@ public class Employee implements Serializable {
     /**
      * @return the dispatchRecords
      */
+    @XmlTransient
     public List<DispatchRecord> getDispatchRecords() {
         return dispatchRecords;
     }

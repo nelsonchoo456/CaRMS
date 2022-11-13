@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -100,6 +101,7 @@ public class Category implements Serializable {
     /**
      * @return the models
      */
+    @XmlTransient
     public List<Model> getModels() {
         return models;
     }
@@ -114,6 +116,7 @@ public class Category implements Serializable {
     /**
      * @return the rentalRates
      */
+    @XmlTransient
     public List<RentalRate> getRentalRates() {
         return rentalRates;
     }

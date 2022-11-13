@@ -250,7 +250,7 @@ public class MainApp {
             
         if (input.equals("Y")) {
             rentalReservation.setPaid(true);
-            System.out.println("Charged " + totalRentalFee.toString() + " to credit card: " + currentCustomer.getCreditCardNumber());
+            System.out.println("Charged $" + totalRentalFee.toString() + " to credit card: " + currentCustomer.getCreditCardNumber());
         } else {
             rentalReservation.setPaid(Boolean.FALSE);
         }

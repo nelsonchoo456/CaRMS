@@ -14,6 +14,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -115,6 +116,7 @@ public class Partner implements Serializable {
     /**
      * @return the customers
      */
+    @XmlTransient
     public List<Customer> getCustomers() {
         return customers;
     }
@@ -129,6 +131,7 @@ public class Partner implements Serializable {
     /**
      * @return the rentalReservations
      */
+    @XmlTransient
     public List<RentalReservation> getRentalReservations() {
         return rentalReservations;
     }

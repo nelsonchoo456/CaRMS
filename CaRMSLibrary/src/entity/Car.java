@@ -18,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlTransient;
 import util.enumeration.CarStatusEnum;
 
 /**
@@ -124,6 +125,7 @@ public class Car implements Serializable {
     /**
      * @return the model
      */
+    @XmlTransient
     public Model getModel() {
         return model;
     }
@@ -138,6 +140,7 @@ public class Car implements Serializable {
     /**
      * @return the outlet
      */
+    @XmlTransient
     public Outlet getOutlet() {
         return outlet;
     }
@@ -152,6 +155,7 @@ public class Car implements Serializable {
     /**
      * @return the rentalReservation
      */
+    @XmlTransient
     public RentalReservation getRentalReservation() {
         return rentalReservation;
     }

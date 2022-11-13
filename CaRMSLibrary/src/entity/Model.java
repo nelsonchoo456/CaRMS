@@ -18,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -110,6 +111,7 @@ public class Model implements Serializable {
     /**
      * @return the category
      */
+    @XmlTransient
     public Category getCategory() {
         return category;
     }
@@ -124,6 +126,7 @@ public class Model implements Serializable {
     /**
      * @return the cars
      */
+    @XmlTransient
     public List<Car> getCars() {
         return cars;
     }

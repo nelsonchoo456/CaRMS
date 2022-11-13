@@ -6,7 +6,9 @@
 package ejb.session.stateless;
 
 import entity.Customer;
+import entity.Partner;
 import java.util.Set;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -20,6 +22,7 @@ import javax.validation.ValidatorFactory;
 import util.exception.CustomerNotFoundException;
 import util.exception.InputDataValidationException;
 import util.exception.InvalidLoginCredentialException;
+import util.exception.PartnerNotFoundException;
 
 /**
  *
@@ -27,6 +30,9 @@ import util.exception.InvalidLoginCredentialException;
  */
 @Stateless
 public class CustomerSessionBean implements CustomerSessionBeanRemote, CustomerSessionBeanLocal {
+
+    @EJB
+    private PartnerSessionBeanLocal partnerSessionBean;
 
     @PersistenceContext(unitName = "CaRMS-ejbPU")
     private EntityManager em;
@@ -94,6 +100,29 @@ public class CustomerSessionBean implements CustomerSessionBeanRemote, CustomerS
         catch (CustomerNotFoundException ex)
         {
             throw new InvalidLoginCredentialException("Email does not exist.");
+        }
+    }
+    
+    @Override
+    public Long createNewCustomerWithPartner(Long partnerId, Customer newCustomer) throws PartnerNotFoundException, InputDataValidationException
+    {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        Validator validator = validatorFactory.getValidator();
+        try {
+            Set<ConstraintViolation<Customer>> constraintViolations = validator.validate(newCustomer);
+            
+            if (constraintViolations.isEmpty()) {
+                Partner partner = partnerSessionBean.retrievePartnerByPartnerId(partnerId);
+                partner.getCustomers().add(newCustomer);
+                newCustomer.setPartner(partner);
+                em.persist(newCustomer);
+                em.flush();
+                return newCustomer.getCustomerId();
+            } else {
+                throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
+            }
+        } catch (PartnerNotFoundException ex) {
+            throw new PartnerNotFoundException(ex.getMessage());
         }
     }
     

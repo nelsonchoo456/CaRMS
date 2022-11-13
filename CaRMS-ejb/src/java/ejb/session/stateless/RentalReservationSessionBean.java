@@ -10,6 +10,7 @@ import entity.Category;
 import entity.Customer;
 import entity.Model;
 import entity.Outlet;
+import entity.Partner;
 import entity.RentalReservation;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -36,6 +37,7 @@ import util.exception.CustomerNotFoundException;
 import util.exception.InputDataValidationException;
 import util.exception.ModelNotFoundException;
 import util.exception.OutletNotFoundException;
+import util.exception.PartnerNotFoundException;
 import util.exception.RentalReservationNotFoundException;
 
 /**
@@ -44,6 +46,9 @@ import util.exception.RentalReservationNotFoundException;
  */
 @Stateless
 public class RentalReservationSessionBean implements RentalReservationSessionBeanRemote, RentalReservationSessionBeanLocal {
+
+    @EJB
+    private PartnerSessionBeanLocal partnerSessionBean;
 
     @EJB
     private OutletSessionBeanLocal outletSessionBean;
@@ -341,5 +346,59 @@ public class RentalReservationSessionBean implements RentalReservationSessionBea
         }
         
         return msg;
+    }
+    
+    @Override
+    public Long createNewPartnerRentalReservation(Long carCategoryId, Long partnerId, Long modelId, Long customerId, Long pickupOutletId, Long returnOutletId, RentalReservation newRentalReservation) throws OutletNotFoundException, CustomerNotFoundException, InputDataValidationException, CategoryNotFoundException, ModelNotFoundException, PartnerNotFoundException {
+        try {
+            
+            ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+            Validator validator = validatorFactory.getValidator();
+            Set<ConstraintViolation<RentalReservation>> constraintViolations = validator.validate(newRentalReservation);
+
+            if (constraintViolations.isEmpty()) {
+                Customer customer = customerSessionBean.retrieveCustomerById(customerId);
+                Partner partner = partnerSessionBean.retrievePartnerByPartnerId(partnerId);
+                Outlet pickupOutlet = outletSessionBean.retrieveOutletById(pickupOutletId);
+                Outlet returnOutlet = outletSessionBean.retrieveOutletById(returnOutletId);
+                newRentalReservation.setCustomer(customer);
+                newRentalReservation.setPartner(partner);
+                newRentalReservation.setPickupOutlet(pickupOutlet);
+                newRentalReservation.setReturnOutlet(returnOutlet);
+                customer.getRentalReservations().add(newRentalReservation);
+                Category carCategory = null;
+                Model model = null;
+                if (carCategoryId > 0) {
+                    carCategory = categorySessionBean.retrieveCategoryById(carCategoryId);
+                    newRentalReservation.setCategory(carCategory);
+                } else {
+                    model = modelSessionBean.retrieveModelById(modelId);
+                    newRentalReservation.setModel(model);
+                }
+                em.persist(newRentalReservation);
+                em.flush();
+                return newRentalReservation.getRentalReservationId();
+            } else {
+                throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
+            }
+        
+        } catch (OutletNotFoundException ex) {
+            throw new OutletNotFoundException("Outlet IDs: " + pickupOutletId + " and " + returnOutletId + " either or both does not exist!");
+        } catch (CustomerNotFoundException ex) {
+            throw new CustomerNotFoundException("Customer ID: " + customerId + " does not exist!");
+        } catch (CategoryNotFoundException ex) {
+            throw new CategoryNotFoundException("Car Category ID: " + carCategoryId + " does not exist!");
+        } catch (ModelNotFoundException ex) {
+            throw new ModelNotFoundException("Model ID: " + modelId + " does not exist!");
+        } catch (PartnerNotFoundException ex) {
+            throw new PartnerNotFoundException("Partner ID: " + partnerId + " does not exist!");
+        }
+    }
+    
+    @Override
+    public List<RentalReservation> retrievePartnerRentalReservations(Long partnerId) {
+        Query query = em.createQuery("SELECT r FROM RentalReservation r WHERE r.partner.partnerId = :inPartnerId");
+        query.setParameter("inPartnerId", partnerId);
+        return query.getResultList();
     }
 }

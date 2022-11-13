@@ -19,6 +19,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -120,6 +121,7 @@ public class Outlet implements Serializable {
     /**
      * @return the employees
      */
+    @XmlTransient
     public List<Employee> getEmployees() {
         return employees;
     }
@@ -148,6 +150,7 @@ public class Outlet implements Serializable {
     /**
      * @return the cars
      */
+    @XmlTransient
     public List<Car> getCars() {
         return cars;
     }
