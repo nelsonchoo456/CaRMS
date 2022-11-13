@@ -9,6 +9,7 @@ import entity.Car;
 import java.util.List;
 import javax.ejb.Remote;
 import util.exception.CarNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.ModelDisabledException;
 import util.exception.ModelNotFoundException;
 import util.exception.OutletNotFoundException;
@@ -20,7 +21,7 @@ import util.exception.OutletNotFoundException;
 @Remote
 public interface CarSessionBeanRemote {
     
-    public Long createNewCar(Car car, String makeName, String modelName, String outletName) throws ModelNotFoundException, ModelDisabledException, OutletNotFoundException;
+    public Long createNewCar(Car car, String makeName, String modelName, String outletName) throws ModelNotFoundException, ModelDisabledException, OutletNotFoundException, InputDataValidationException;
     
     public Car retrieveCarById(Long carId) throws CarNotFoundException;
     

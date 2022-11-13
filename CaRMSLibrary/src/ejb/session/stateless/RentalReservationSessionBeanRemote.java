@@ -12,6 +12,7 @@ import java.util.List;
 import javax.ejb.Remote;
 import util.exception.CategoryNotFoundException;
 import util.exception.CustomerNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.ModelNotFoundException;
 import util.exception.OutletNotFoundException;
 import util.exception.RentalReservationNotFoundException;
@@ -23,7 +24,7 @@ import util.exception.RentalReservationNotFoundException;
 @Remote
 public interface RentalReservationSessionBeanRemote {
     
-    public Long createNewRentalReservation(Long categoryId, Long modelId, Long customerId, Long pickupOutletId, Long returnOutletId, RentalReservation rentalReservation) throws CategoryNotFoundException, ModelNotFoundException, CustomerNotFoundException, OutletNotFoundException;
+    public Long createNewRentalReservation(Long categoryId, Long modelId, Long customerId, Long pickupOutletId, Long returnOutletId, RentalReservation rentalReservation) throws CategoryNotFoundException, ModelNotFoundException, CustomerNotFoundException, OutletNotFoundException, InputDataValidationException;
     
     public RentalReservation retrieveRentalReservationByRentalReservationId(Long rentalReservationId) throws RentalReservationNotFoundException;
     

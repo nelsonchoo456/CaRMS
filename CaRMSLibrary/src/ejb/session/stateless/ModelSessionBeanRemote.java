@@ -9,6 +9,7 @@ import entity.Model;
 import java.util.List;
 import javax.ejb.Remote;
 import util.exception.CategoryNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.ModelNotFoundException;
 
 /**
@@ -18,7 +19,7 @@ import util.exception.ModelNotFoundException;
 @Remote
 public interface ModelSessionBeanRemote {
     
-    public Long createNewModel(Model model, String categoryName) throws CategoryNotFoundException;
+    public Long createNewModel(Model model, String categoryName) throws CategoryNotFoundException, InputDataValidationException;
     
     public List<Model> viewAllModels();
     

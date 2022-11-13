@@ -25,8 +25,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.exception.CategoryNotFoundException;
 import util.exception.CustomerNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.InvalidLoginCredentialException;
 import util.exception.ModelNotFoundException;
 import util.exception.OutletNotFoundException;
@@ -49,8 +55,13 @@ public class MainApp {
     private RentalReservationSessionBeanRemote rentalReservationSessionBeanRemote;
 
     private Customer currentCustomer;
+    
+    private final ValidatorFactory validatorFactory;
+    private final Validator validator;
 
     public MainApp() {
+        this.validatorFactory = Validation.buildDefaultValidatorFactory();
+        this.validator = validatorFactory.getValidator();
     }
 
     public MainApp(OutletSessionBeanRemote outletSessionBeanRemote, EmployeeSessionBeanRemote employeeSessionBeanRemote, RentalRateSessionBeanRemote rentalRateSessionBeanRemote, ModelSessionBeanRemote modelSessionBeanRemote, CategorySessionBeanRemote categorySessionBeanRemote, CarSessionBeanRemote carSessionBeanRemote, CustomerSessionBeanRemote customerSessionBeanRemote, RentalReservationSessionBeanRemote rentalReservationSessionBeanRemote) {
@@ -62,6 +73,9 @@ public class MainApp {
         this.carSessionBeanRemote = carSessionBeanRemote;
         this.customerSessionBeanRemote = customerSessionBeanRemote;
         this.rentalReservationSessionBeanRemote = rentalReservationSessionBeanRemote;
+        
+        this.validatorFactory = Validation.buildDefaultValidatorFactory();
+        this.validator = validatorFactory.getValidator();
     }
 
     public void runApp() {
@@ -227,32 +241,52 @@ public class MainApp {
 
         RentalReservation rentalReservation = new RentalReservation();
         
-        try {
-            rentalReservation.setStartDateTime(pickUpDateTime);
-            rentalReservation.setEndDateTime(returnDateTime);
-            rentalReservation.setPrice(totalRentalFee);
+        rentalReservation.setStartDateTime(pickUpDateTime);
+        rentalReservation.setEndDateTime(returnDateTime);
+        rentalReservation.setPrice(totalRentalFee);
             
-            System.out.print("Would you like to pay now? (Enter 'Y' to enter payment details)> ");
-            String input = scanner.nextLine().trim();
+        System.out.print("Would you like to pay now? (Enter 'Y' to enter payment details)> ");
+        String input = scanner.nextLine().trim();
             
-            if (input.equals("Y")) {
-                rentalReservation.setPaid(true);
-                System.out.println("Charged " + totalRentalFee.toString() + " to credit card: " + currentCustomer.getCreditCardNumber());
-            } else {
-                rentalReservation.setPaid(Boolean.FALSE);
-            }
-            
-            Long rentalReservationId = rentalReservationSessionBeanRemote.createNewRentalReservation(categoryId, modelId, currentCustomer.getCustomerId(), pickupOutletId, returnOutletId, rentalReservation);
-            System.out.println("Rental reservation created with ID: " + rentalReservationId);
-        } catch (CategoryNotFoundException ex) {
-            System.out.println(ex.getMessage());
-        } catch (ModelNotFoundException ex) {
-            System.out.println(ex.getMessage());
-        } catch (CustomerNotFoundException ex) {
-            System.out.println(ex.getMessage());
-        } catch (OutletNotFoundException ex) {
-            System.out.println(ex.getMessage());
+        if (input.equals("Y")) {
+            rentalReservation.setPaid(true);
+            System.out.println("Charged " + totalRentalFee.toString() + " to credit card: " + currentCustomer.getCreditCardNumber());
+        } else {
+            rentalReservation.setPaid(Boolean.FALSE);
         }
+        
+        Set<ConstraintViolation<RentalReservation>>constraintViolations = validator.validate(rentalReservation);
+        
+        if (constraintViolations.isEmpty()) {
+            try {
+                Long rentalReservationId = rentalReservationSessionBeanRemote.createNewRentalReservation(categoryId, modelId, currentCustomer.getCustomerId(), pickupOutletId, returnOutletId, rentalReservation);
+                System.out.println("Rental reservation created with ID: " + rentalReservationId);
+            } catch (CategoryNotFoundException ex) {
+                System.out.println(ex.getMessage());
+            } catch (ModelNotFoundException ex) {
+                System.out.println(ex.getMessage());
+            } catch (CustomerNotFoundException ex) {
+                System.out.println(ex.getMessage());
+            } catch (OutletNotFoundException ex) {
+                System.out.println(ex.getMessage());
+            } catch (InputDataValidationException ex) {
+                System.out.println("Invalid input data! \n");
+            }
+        } else {
+            showInputDataValidationErrorsForRentalReservation(constraintViolations);
+        }
+    }
+    
+    private void showInputDataValidationErrorsForRentalReservation(Set<ConstraintViolation<RentalReservation>>constraintViolations)
+    {
+        System.out.println("\nInput data validation error!:");
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            System.out.println("\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage());
+        }
+
+        System.out.println("\nPlease try again......\n");
     }
     
     private void doReserveCar()
@@ -297,9 +331,14 @@ public class MainApp {
                 rentalReservation.setPaid(Boolean.FALSE);
             }
             
-            Long rentalReservationId = rentalReservationSessionBeanRemote.createNewRentalReservation(categoryId, modelId, currentCustomer.getCustomerId(), pickupOutletId, returnOutletId, rentalReservation);
-            System.out.println("Rental reservation created with ID: " + rentalReservationId);
+            Set<ConstraintViolation<RentalReservation>>constraintViolations = validator.validate(rentalReservation);
             
+            if (constraintViolations.isEmpty()) {
+                Long rentalReservationId = rentalReservationSessionBeanRemote.createNewRentalReservation(categoryId, modelId, currentCustomer.getCustomerId(), pickupOutletId, returnOutletId, rentalReservation);
+                System.out.println("Rental reservation created with ID: " + rentalReservationId);
+            } else {
+                showInputDataValidationErrorsForRentalReservation(constraintViolations);
+            }
         } catch (RentalRateNotFoundException ex) {
             System.out.println(ex.getMessage());
         } catch (ParseException ex) {
@@ -312,6 +351,8 @@ public class MainApp {
             System.out.println(ex.getMessage());
         } catch (CustomerNotFoundException ex) {
             System.out.println(ex.getMessage());
+        } catch (InputDataValidationException ex) {
+            System.out.println("Invalid input data! \n");
         }
     }
 
@@ -331,9 +372,31 @@ public class MainApp {
         newCustomer.setPassword(scanner.nextLine().trim());
         System.out.print("Enter Credit Card Number> ");
         newCustomer.setCreditCardNumber(scanner.nextLine().trim());
+        
+        Set<ConstraintViolation<Customer>>constraintViolations = validator.validate(newCustomer);
+        
+        if (constraintViolations.isEmpty()) {
+            try {
+                Long newCustomerId = customerSessionBeanRemote.createNewCustomer(newCustomer);
+                System.out.println("New customer created successfully!: " + newCustomerId.toString() + "\n");
+            } catch (InputDataValidationException ex) {
+                System.out.println("Invalid input data! \n");
+            }
+        } else {
+            showInputDataValidationErrorsForCustomer(constraintViolations);
+        }
+    }
+    
+    private void showInputDataValidationErrorsForCustomer(Set<ConstraintViolation<Customer>>constraintViolations)
+    {
+        System.out.println("\nInput data validation error!:");
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            System.out.println("\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage());
+        }
 
-        Long newCustomerId = customerSessionBeanRemote.createNewCustomer(newCustomer);
-        System.out.println("New customer created successfully!: " + newCustomerId.toString() + "\n");
+        System.out.println("\nPlease try again......\n");
     }
 
     private void menuMain() {
@@ -344,12 +407,13 @@ public class MainApp {
             System.out.println("*** CARMS Reservation System ***\n");
             System.out.println("You are login as " + currentCustomer.getFirstName() + " " + currentCustomer.getLastName() + "\n");
             System.out.println("1: Reserve Car");
-            System.out.println("2: View Reservation Details");
-            System.out.println("3: View All My Reservations");
-            System.out.println("4: Logout\n");
+            System.out.println("2: Search Car");
+            System.out.println("3: View Reservation Details");
+            System.out.println("4: View All My Reservations");
+            System.out.println("5: Logout\n");
             response = 0;
 
-            while (response < 1 || response > 3) {
+            while (response < 1 || response > 5) {
                 System.out.print("> ");
 
                 response = scanner.nextInt();
@@ -357,17 +421,19 @@ public class MainApp {
                 if (response == 1) {
                     doReserveCar();
                 } else if (response == 2) {
-                    doViewReservationDetails();
+                    doSearchCar();
                 } else if (response == 3) {
-                    doViewAllMyReservations();
+                    doViewReservationDetails();
                 } else if (response == 4) {
+                    doViewAllMyReservations();
+                } else if (response == 5) {
                     break;
                 } else {
                     System.out.println("Invalid option, please try again!\n");
                 }
             }
 
-            if (response == 4) {
+            if (response == 5) {
                 break;
             }
         }
@@ -380,10 +446,10 @@ public class MainApp {
         
         List<RentalReservation> reservations = rentalReservationSessionBeanRemote.retrieveRentalReservationsByCustomer(currentCustomer.getCustomerId());
         
-        System.out.printf("%30s%18s%30s%30s%30s%18s%18s\n", "Rental Reservation ID", "Rental Fee", "Start Date Time", "End Date Time", "Paid", "isCancelled", "Car Category");
+        System.out.printf("%30s%18s%40s%40s%30s%18s%18s\n", "Rental Reservation ID", "Rental Fee", "Start Date Time", "End Date Time", "Paid", "isCancelled", "Car Category");
         
         for (RentalReservation rentalReservation : reservations) {
-            System.out.printf("%30s%18s%30s%30s%30s%18s%18s\n", rentalReservation.getRentalReservationId(), rentalReservation.getPrice(), rentalReservation.getStartDateTime(), rentalReservation.getEndDateTime(), rentalReservation.isPaid(), rentalReservation.isIsCancelled(), rentalReservation.getCategory().getCategoryName());
+            System.out.printf("%30s%18s%40s%40s%30s%18s%18s\n", rentalReservation.getRentalReservationId(), rentalReservation.getPrice(), rentalReservation.getStartDateTime(), rentalReservation.getEndDateTime(), String.valueOf(rentalReservation.isPaid()), String.valueOf(rentalReservation.isIsCancelled()), rentalReservation.getCategory().getCategoryName());
         }
         
         System.out.print("Press any key to continue...> ");
@@ -402,8 +468,8 @@ public class MainApp {
         
         try {
             RentalReservation rentalReservation = rentalReservationSessionBeanRemote.retrieveRentalReservationByRentalReservationId(reservationId);
-            System.out.printf("%30s%18s%30s%30s%30s%18s%18s\n", "Rental Reservation ID", "Rental Fee", "Start Date Time", "End Date Time", "Paid", "isCancelled", "Car Category");
-            System.out.printf("%30s%18s%30s%30s%30s%18s%18s\n", rentalReservation.getRentalReservationId(), rentalReservation.getPrice(), rentalReservation.getStartDateTime(), rentalReservation.getEndDateTime(), rentalReservation.isPaid(), rentalReservation.isIsCancelled(), rentalReservation.getCategory().getCategoryName());
+            System.out.printf("%30s%18s%40s%40s%30s%18s%18s\n", "Rental Reservation ID", "Rental Fee", "Start Date Time", "End Date Time", "Paid", "isCancelled", "Car Category");
+            System.out.printf("%30s%18s%40s%40s%30s%18s%18s\n", rentalReservation.getRentalReservationId(), rentalReservation.getPrice(), rentalReservation.getStartDateTime(), rentalReservation.getEndDateTime(), String.valueOf(rentalReservation.isPaid()), String.valueOf(rentalReservation.isIsCancelled()), rentalReservation.getCategory().getCategoryName());
             
             System.out.print("Would you like to cancel the reservation? (Enter 'Y' to enter cancel the reservation)> ");
             String input = scanner.nextLine().trim();

@@ -6,13 +6,19 @@
 package ejb.session.stateless;
 
 import entity.Customer;
+import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.exception.CustomerNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.InvalidLoginCredentialException;
 
 /**
@@ -29,11 +35,19 @@ public class CustomerSessionBean implements CustomerSessionBeanRemote, CustomerS
     // "Insert Code > Add Business Method")
     
     @Override
-    public Long createNewCustomer(Customer customer)
+    public Long createNewCustomer(Customer customer) throws InputDataValidationException
     {
-        em.persist(customer);
-        em.flush();
-        return customer.getCustomerId();
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        Validator validator = validatorFactory.getValidator();
+        Set<ConstraintViolation<Customer>> constraintViolations = validator.validate(customer);
+        
+        if (constraintViolations.isEmpty()) {
+            em.persist(customer);
+            em.flush();
+            return customer.getCustomerId();
+        } else {
+            throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
+        }
     }
     
     @Override
@@ -81,5 +95,17 @@ public class CustomerSessionBean implements CustomerSessionBeanRemote, CustomerS
         {
             throw new InvalidLoginCredentialException("Email does not exist.");
         }
+    }
+    
+    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<Customer>>constraintViolations)
+    {
+        String msg = "Input data validation error!:";
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            msg += "\n\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage();
+        }
+        
+        return msg;
     }
 }

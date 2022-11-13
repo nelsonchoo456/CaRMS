@@ -5,10 +5,10 @@
  */
 package ejb.session.stateless;
 
-import entity.Car;
 import entity.Category;
 import entity.Model;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -16,7 +16,12 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.exception.CategoryNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.ModelNotFoundException;
 
 /**
@@ -38,19 +43,27 @@ public class ModelSessionBean implements ModelSessionBeanRemote, ModelSessionBea
     // "Insert Code > Add Business Method")
     
     @Override
-    public Long createNewModel(Model model, String categoryName) throws CategoryNotFoundException
+    public Long createNewModel(Model model, String categoryName) throws CategoryNotFoundException, InputDataValidationException
     {
-        try {
-            Category category = categorySessionBean.retrieveCategoryByName(categoryName);
-            model.setCategory(category);
-            category.getModels().add(model);
-            em.persist(model);
-            em.flush();            
-        } catch (CategoryNotFoundException ex) {
-            throw new CategoryNotFoundException(ex.getMessage());
-        }
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        Validator validator = validatorFactory.getValidator();
+        Set<ConstraintViolation<Model>> constraintViolations = validator.validate(model);
         
-        return model.getModelId();
+        if (constraintViolations.isEmpty()) {
+            try {
+                Category category = categorySessionBean.retrieveCategoryByName(categoryName);
+                model.setCategory(category);
+                category.getModels().add(model);
+                em.persist(model);
+                em.flush();            
+            } catch (CategoryNotFoundException ex) {
+                throw new CategoryNotFoundException(ex.getMessage());
+            }
+
+            return model.getModelId();
+        } else {
+            throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
+        }
     }
     
     
@@ -117,5 +130,17 @@ public class ModelSessionBean implements ModelSessionBeanRemote, ModelSessionBea
         } else {
             model.setIsDisabled(true);
         }
+    }
+    
+    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<Model>>constraintViolations)
+    {
+        String msg = "Input data validation error!:";
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            msg += "\n\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage();
+        }
+        
+        return msg;
     }
 }

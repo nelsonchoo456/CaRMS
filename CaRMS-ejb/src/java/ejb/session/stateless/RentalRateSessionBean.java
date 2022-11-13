@@ -9,12 +9,18 @@ import entity.Category;
 import entity.RentalRate;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.exception.CategoryNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.RentalRateNotFoundException;
 
 /**
@@ -34,18 +40,26 @@ public class RentalRateSessionBean implements RentalRateSessionBeanRemote, Renta
     // "Insert Code > Add Business Method")
     
     @Override
-    public Long createNewRentalRate(RentalRate rentalRate, String categoryName) throws CategoryNotFoundException
+    public Long createNewRentalRate(RentalRate rentalRate, String categoryName) throws CategoryNotFoundException, InputDataValidationException
     {
-        try {
-            Category category = categorySessionBean.retrieveCategoryByName(categoryName);
-            rentalRate.setCategory(category);
-            category.getRentalRates().add(rentalRate);
-        } catch (CategoryNotFoundException ex) {
-            throw new CategoryNotFoundException(ex.getMessage());
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        Validator validator = validatorFactory.getValidator();
+        Set<ConstraintViolation<RentalRate>> constraintViolations = validator.validate(rentalRate);
+        
+        if (constraintViolations.isEmpty()) {
+            try {
+                Category category = categorySessionBean.retrieveCategoryByName(categoryName);
+                rentalRate.setCategory(category);
+                category.getRentalRates().add(rentalRate);
+            } catch (CategoryNotFoundException ex) {
+                throw new CategoryNotFoundException(ex.getMessage());
+            }
+            em.persist(rentalRate);
+            em.flush();
+            return rentalRate.getRateId();
+        } else {
+            throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
         }
-        em.persist(rentalRate);
-        em.flush();
-        return rentalRate.getRateId();
     }
     
     @Override
@@ -116,5 +130,17 @@ public class RentalRateSessionBean implements RentalRateSessionBeanRemote, Renta
             throw new RentalRateNotFoundException("No available rates.");
         }
         return rentalRates.get(0);
+    }
+    
+    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<RentalRate>>constraintViolations)
+    {
+        String msg = "Input data validation error!:";
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            msg += "\n\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage();
+        }
+        
+        return msg;
     }
 }

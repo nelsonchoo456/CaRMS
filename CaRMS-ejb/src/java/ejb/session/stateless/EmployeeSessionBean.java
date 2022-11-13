@@ -7,6 +7,7 @@ package ejb.session.stateless;
 
 import entity.Employee;
 import entity.Outlet;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -14,7 +15,12 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.exception.EmployeeNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.InvalidLoginCredentialException;
 import util.exception.OutletNotFoundException;
 
@@ -36,20 +42,25 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
     // "Insert Code > Add Business Method")
     
     @Override
-    public Long createNewEmployee(Employee employee, Long outletId) throws OutletNotFoundException
+    public Long createNewEmployee(Employee employee, Long outletId) throws OutletNotFoundException, InputDataValidationException
     {
-        try {
-            Outlet outlet = outletSessionBean.retrieveOutletById(outletId);
-            employee.setOutlet(outlet);
-            outlet.getEmployees().add(employee);
-            em.persist(employee);
-            em.flush();
-        } catch (OutletNotFoundException ex) {
-            throw new OutletNotFoundException(ex.getMessage());
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        Validator validator = validatorFactory.getValidator();
+        Set<ConstraintViolation<Employee>> constraintViolations = validator.validate(employee);
+        if (constraintViolations.isEmpty()) {
+            try {
+                Outlet outlet = outletSessionBean.retrieveOutletById(outletId);
+                employee.setOutlet(outlet);
+                outlet.getEmployees().add(employee);
+                em.persist(employee);
+                em.flush();
+            } catch (OutletNotFoundException ex) {
+                throw new OutletNotFoundException(ex.getMessage());
+            }
+            return employee.getEmployeeId();
+        } else {
+            throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
         }
-        
-        
-        return employee.getEmployeeId();
     }
     
     @Override
@@ -99,5 +110,17 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
         } else {
             throw new EmployeeNotFoundException("Emplyoee " + employeeId + " does not exist.");
         }
+    }
+    
+    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<Employee>>constraintViolations)
+    {
+        String msg = "Input data validation error!:";
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            msg += "\n\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage();
+        }
+        
+        return msg;
     }
 }

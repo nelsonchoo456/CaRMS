@@ -8,6 +8,7 @@ package ejb.session.stateless;
 import entity.Outlet;
 import java.util.List;
 import javax.ejb.Remote;
+import util.exception.InputDataValidationException;
 import util.exception.OutletNotFoundException;
 
 /**
@@ -17,7 +18,7 @@ import util.exception.OutletNotFoundException;
 @Remote
 public interface OutletSessionBeanRemote {
     
-    public Long createOutlet(Outlet outlet);
+    public Long createOutlet(Outlet outlet) throws InputDataValidationException;
     
     public Outlet retrieveOutletById(Long outletId) throws OutletNotFoundException;
     

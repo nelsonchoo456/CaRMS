@@ -25,6 +25,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.enumeration.CarStatusEnum;
 import util.enumeration.RentalRateTypeEnum;
 import util.enumeration.UserRoleEnum;
@@ -33,6 +38,7 @@ import util.exception.CategoryNotFoundException;
 import util.exception.DispatchRecordNotFoundException;
 import util.exception.DriverNotWorkingInSameOutletException;
 import util.exception.EmployeeNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.InvalidAccessRightException;
 import util.exception.ModelDisabledException;
 import util.exception.ModelNotFoundException;
@@ -57,8 +63,13 @@ public class SalesManagementModule {
     private RentalReservationSessionBeanRemote rentalReservationSessionBeanRemote;
     
     private Employee currentEmployee;
+    
+    private final ValidatorFactory validatorFactory;
+    private final Validator validator;
 
     public SalesManagementModule() {
+        this.validatorFactory = Validation.buildDefaultValidatorFactory();
+        this.validator = validatorFactory.getValidator();
     }
 
     public SalesManagementModule(OutletSessionBeanRemote outletSessionBeanRemote, EmployeeSessionBeanRemote employeeSessionBeanRemote, RentalRateSessionBeanRemote rentalRateSessionBeanRemote, ModelSessionBeanRemote modelSessionBeanRemote, CategorySessionBeanRemote categorySessionBeanRemote, CarSessionBeanRemote carSessionBeanRemote, DispatchRecordSessionBeanRemote dispatchRecordSessionBeanRemote, RentalReservationSessionBeanRemote rentalReservationSessionBeanRemote, Employee currentEmployee) {
@@ -71,6 +82,9 @@ public class SalesManagementModule {
         this.dispatchRecordSessionBeanRemote = dispatchRecordSessionBeanRemote;
         this.currentEmployee = currentEmployee;
         this.rentalReservationSessionBeanRemote = rentalReservationSessionBeanRemote;
+        
+        this.validatorFactory = Validation.buildDefaultValidatorFactory();
+        this.validator = validatorFactory.getValidator();
     }
     
     public void menuSalesManagement() throws InvalidAccessRightException
@@ -181,16 +195,36 @@ public class SalesManagementModule {
                     return;
                 }
             }
-
-            try {
-                Long newRentalRateId = rentalRateSessionBeanRemote.createNewRentalRate(newRentalRate, category);
-                System.out.println("New rental rate created successfully!: " + newRentalRateId.toString() + "\n");
-            } catch (CategoryNotFoundException ex) {
-                System.out.println("An error has occurred while creating the new rental rate!: The category does not exist\n");
-            }  
+            
+            Set<ConstraintViolation<RentalRate>>constraintViolations = validator.validate(newRentalRate);
+            
+            if (constraintViolations.isEmpty()) {
+                try {
+                    Long newRentalRateId = rentalRateSessionBeanRemote.createNewRentalRate(newRentalRate, category);
+                    System.out.println("New rental rate created successfully!: " + newRentalRateId.toString() + "\n");
+                } catch (CategoryNotFoundException ex) {
+                    System.out.println("An error has occurred while creating the new rental rate!: The category does not exist\n");
+                }
+            } else {
+                showInputDataValidationErrorsForRentalRate(constraintViolations);
+            }
         } catch (ParseException ex) {
             System.out.println("Invalid date input!\n");
+        } catch (InputDataValidationException ex) {
+            System.out.println("Invalid data input!\n");
         }
+    }
+    
+    private void showInputDataValidationErrorsForRentalRate(Set<ConstraintViolation<RentalRate>>constraintViolations)
+    {
+        System.out.println("\nInput data validation error!:");
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            System.out.println("\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage());
+        }
+
+        System.out.println("\nPlease try again......\n");
     }
     
     private void doViewAllRentalRates()
@@ -434,12 +468,32 @@ public class SalesManagementModule {
         System.out.print("Enter Model> ");
         newModel.setModel(scanner.nextLine().trim());
         
-        try {
-            Long newModelId = modelSessionBeanRemote.createNewModel(newModel, categoryName);
-            System.out.println("New model created successfully!: " + newModelId.toString() + "\n");
-        } catch (CategoryNotFoundException ex) {
-            System.out.println("An error has occurred while creating the model!: The category does not exist\n");
+        Set<ConstraintViolation<Model>>constraintViolations = validator.validate(newModel);
+        
+        if (constraintViolations.isEmpty()) {
+            try {
+                Long newModelId = modelSessionBeanRemote.createNewModel(newModel, categoryName);
+                System.out.println("New model created successfully!: " + newModelId.toString() + "\n");
+            } catch (CategoryNotFoundException ex) {
+                System.out.println("An error has occurred while creating the model!: The category does not exist\n");
+            } catch (InputDataValidationException ex) {
+                System.out.println("Invalid data input!\n");
+            }
+        } else {
+            showInputDataValidationErrorsForModel(constraintViolations);
         }
+    }
+    
+    private void showInputDataValidationErrorsForModel(Set<ConstraintViolation<Model>>constraintViolations)
+    {
+        System.out.println("\nInput data validation error!:");
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            System.out.println("\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage());
+        }
+
+        System.out.println("\nPlease try again......\n");
     }
     
     private void doViewAllModels()
@@ -452,7 +506,7 @@ public class SalesManagementModule {
 
         for(Model model:models)
         {
-            System.out.printf("%19s%18s%18s\n", model.getModelId(), model.getMake(), model.getModel(), model.isIsDisabled());
+            System.out.printf("%19s%18s%18s%18s\n", model.getModelId(), model.getMake(), model.getModel(), String.valueOf(model.isIsDisabled()));
         }        
         
         System.out.print("Press any key to continue...> ");
@@ -472,18 +526,19 @@ public class SalesManagementModule {
         String modelName = scanner.nextLine().trim();
         try {
             model = modelSessionBeanRemote.retrieveModelByModelNameAndMake(makeName, modelName);
-            System.out.print("Enter New Model (blank if no change)> ");
-            input = scanner.nextLine().trim();
-            if(input.length() > 0)
-            {
-                model.setModel(input);
-            }
             
             System.out.print("Enter New Make (blank if no change)> ");
             input = scanner.nextLine().trim();
             if(input.length() > 0)
             {
                 model.setMake(input);
+            }
+            
+            System.out.print("Enter New Model (blank if no change)> ");
+            input = scanner.nextLine().trim();
+            if(input.length() > 0)
+            {
+                model.setModel(input);
             }
             
             System.out.print("Set as disabled (Enter Y for disabled, N for not disabled)> ");
@@ -560,16 +615,36 @@ public class SalesManagementModule {
             return;
         }
         
-        try {
-            Long newCarId = carSessionBeanRemote.createNewCar(newCar, makeName, modelName, outletName);
-            System.out.println("New car created successfully!: " + newCarId.toString() + "\n");
-        } catch (ModelNotFoundException ex) {
-            System.out.println("An error has occurred while creating the car!: The model does not exist\n");
-        } catch (ModelDisabledException ex) {
-            System.out.println("An error has occurred while creating the car!: The model does not exist\n");
-        } catch (OutletNotFoundException ex) {
-            System.out.println(ex.getMessage());
+        Set<ConstraintViolation<Car>>constraintViolations = validator.validate(newCar);
+        
+        if (constraintViolations.isEmpty()) {
+            try {
+                Long newCarId = carSessionBeanRemote.createNewCar(newCar, makeName, modelName, outletName);
+                System.out.println("New car created successfully!: " + newCarId.toString() + "\n");
+            } catch (ModelNotFoundException ex) {
+                System.out.println("An error has occurred while creating the car!: The model does not exist\n");
+            } catch (ModelDisabledException ex) {
+                System.out.println("An error has occurred while creating the car!: The model does not exist\n");
+            } catch (OutletNotFoundException ex) {
+                System.out.println(ex.getMessage());
+            } catch (InputDataValidationException ex) {
+                System.out.println("Invalid data input.");
+            }
+        } else {
+            showInputDataValidationErrorsForCar(constraintViolations);
         }
+    }
+    
+    private void showInputDataValidationErrorsForCar(Set<ConstraintViolation<Car>>constraintViolations)
+    {
+        System.out.println("\nInput data validation error!:");
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            System.out.println("\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage());
+        }
+
+        System.out.println("\nPlease try again......\n");
     }
     
     private void doViewAllCars()

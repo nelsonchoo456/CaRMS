@@ -20,14 +20,20 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.enumeration.CarStatusEnum;
 import util.exception.CategoryNotFoundException;
 import util.exception.CustomerNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.ModelNotFoundException;
 import util.exception.OutletNotFoundException;
 import util.exception.RentalReservationNotFoundException;
@@ -58,44 +64,52 @@ public class RentalReservationSessionBean implements RentalReservationSessionBea
     // "Insert Code > Add Business Method")
     
     @Override
-    public Long createNewRentalReservation(Long categoryId, Long modelId, Long customerId, Long pickupOutletId, Long returnOutletId, RentalReservation rentalReservation) throws CategoryNotFoundException, ModelNotFoundException, CustomerNotFoundException, OutletNotFoundException
+    public Long createNewRentalReservation(Long categoryId, Long modelId, Long customerId, Long pickupOutletId, Long returnOutletId, RentalReservation rentalReservation) throws CategoryNotFoundException, ModelNotFoundException, CustomerNotFoundException, OutletNotFoundException, InputDataValidationException
     {
-        try {
-            Customer customer = customerSessionBean.retrieveCustomerById(customerId);
-            Outlet pickupOutlet = outletSessionBean.retrieveOutletById(pickupOutletId);
-            Outlet returnOutlet = outletSessionBean.retrieveOutletById(returnOutletId);
-            
-            rentalReservation.setCustomer(customer);
-            rentalReservation.setPickupOutlet(pickupOutlet);
-            rentalReservation.setReturnOutlet(returnOutlet);
-            
-            customer.getRentalReservations().add(rentalReservation);
-            
-            Category category;
-            Model model;
-            
-            if (modelId > 0) {
-                model = modelSessionBean.retrieveModelById(modelId);
-                category = model.getCategory();
-                rentalReservation.setCategory(category);
-                rentalReservation.setModel(model);
-            } else {
-                category = categorySessionBean.retrieveCategoryById(categoryId);
-                rentalReservation.setCategory(category);
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        Validator validator = validatorFactory.getValidator();
+        Set<ConstraintViolation<RentalReservation>> constraintViolations = validator.validate(rentalReservation);
+        
+        if (constraintViolations.isEmpty()) {
+            try {
+                Customer customer = customerSessionBean.retrieveCustomerById(customerId);
+                Outlet pickupOutlet = outletSessionBean.retrieveOutletById(pickupOutletId);
+                Outlet returnOutlet = outletSessionBean.retrieveOutletById(returnOutletId);
+
+                rentalReservation.setCustomer(customer);
+                rentalReservation.setPickupOutlet(pickupOutlet);
+                rentalReservation.setReturnOutlet(returnOutlet);
+
+                customer.getRentalReservations().add(rentalReservation);
+
+                Category category;
+                Model model;
+
+                if (modelId > 0) {
+                    model = modelSessionBean.retrieveModelById(modelId);
+                    category = model.getCategory();
+                    rentalReservation.setCategory(category);
+                    rentalReservation.setModel(model);
+                } else {
+                    category = categorySessionBean.retrieveCategoryById(categoryId);
+                    rentalReservation.setCategory(category);
+                }
+
+                em.persist(rentalReservation);
+                em.flush();
+                return rentalReservation.getRentalReservationId();
+            } catch (CategoryNotFoundException ex) {
+                throw new CategoryNotFoundException(ex.getMessage());
+            } catch (ModelNotFoundException ex) {
+                throw new ModelNotFoundException(ex.getMessage());
+            } catch (CustomerNotFoundException ex) {
+                throw new CustomerNotFoundException(ex.getMessage());
+            } catch (OutletNotFoundException ex) {
+                throw new OutletNotFoundException(ex.getMessage());
             }
-            
-            em.persist(rentalReservation);
-            em.flush();
-            return rentalReservation.getRentalReservationId();
-        } catch (CategoryNotFoundException ex) {
-            throw new CategoryNotFoundException(ex.getMessage());
-        } catch (ModelNotFoundException ex) {
-            throw new ModelNotFoundException(ex.getMessage());
-        } catch (CustomerNotFoundException ex) {
-            throw new CustomerNotFoundException(ex.getMessage());
-        } catch (OutletNotFoundException ex) {
-            throw new OutletNotFoundException(ex.getMessage());
-        }
+        } else {
+            throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
+        } 
     }
     
     @Override
@@ -315,5 +329,17 @@ public class RentalReservationSessionBean implements RentalReservationSessionBea
         } catch (RentalReservationNotFoundException ex) {
             throw new RentalReservationNotFoundException("Rental Reservation ID: " + reservationId + "not found!");
         }
+    }
+    
+    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<RentalReservation>>constraintViolations)
+    {
+        String msg = "Input data validation error!:";
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            msg += "\n\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage();
+        }
+        
+        return msg;
     }
 }

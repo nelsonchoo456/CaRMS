@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.Local;
 import util.exception.CategoryNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.RentalRateNotFoundException;
 
 /**
@@ -20,7 +21,7 @@ import util.exception.RentalRateNotFoundException;
 @Local
 public interface CategorySessionBeanLocal {
 
-    public Long createNewCategory(Category category);
+    public Long createNewCategory(Category category) throws InputDataValidationException;
 
     public Category retrieveCategoryById(Long id) throws CategoryNotFoundException;
 

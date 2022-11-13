@@ -7,12 +7,18 @@ package ejb.session.stateless;
 
 import entity.Outlet;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import util.exception.InputDataValidationException;
 import util.exception.OutletNotFoundException;
 
 /**
@@ -30,13 +36,20 @@ public class OutletSessionBean implements OutletSessionBeanRemote, OutletSession
     // "Insert Code > Add Business Method")
     
     @Override
-    public Long createOutlet(Outlet outlet) 
+    public Long createOutlet(Outlet outlet) throws InputDataValidationException
     {
-        em.persist(outlet);
-        em.flush();
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        Validator validator = validatorFactory.getValidator();
+        Set<ConstraintViolation<Outlet>> constraintViolations = validator.validate(outlet);
         
-        return outlet.getOutletId();
-        
+        if (constraintViolations.isEmpty()) {
+            em.persist(outlet);
+            em.flush();
+
+            return outlet.getOutletId();
+        } else {
+            throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
+        }
     }
     
     @Override
@@ -77,5 +90,17 @@ public class OutletSessionBean implements OutletSessionBeanRemote, OutletSession
         }
         
         return outlets;
+    }
+    
+    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<Outlet>>constraintViolations)
+    {
+        String msg = "Input data validation error!:";
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            msg += "\n\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage();
+        }
+        
+        return msg;
     }
 }

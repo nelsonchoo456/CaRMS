@@ -18,6 +18,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import util.enumeration.UserRoleEnum;
 
 /**
@@ -32,13 +34,20 @@ public class Employee implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
     @Column(nullable = false, length = 64)
+    @NotNull
+    @Size(max = 64)
     private String name;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @NotNull
     private UserRoleEnum userRoleEnum;
     @Column(nullable = false, unique = true, length = 64)
+    @NotNull
+    @Size(max = 64)
     private String username;
     @Column(nullable = false, length = 64)
+    @NotNull
+    @Size(max = 64)
     private String password;
     
     @ManyToOne(optional = false)

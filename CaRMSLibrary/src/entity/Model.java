@@ -16,6 +16,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -29,10 +31,15 @@ public class Model implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long modelId;
     @Column(nullable = false, length = 64)
+    @NotNull
+    @Size(max = 64)
     private String make;
     @Column(nullable = false, length = 64)
+    @NotNull
+    @Size(max = 64)
     private String model;
     @Column(nullable = false)
+    @NotNull
     private boolean isDisabled;
     
     @ManyToOne(optional = false)

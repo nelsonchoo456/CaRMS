@@ -10,6 +10,7 @@ import entity.Model;
 import entity.Outlet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -17,7 +18,12 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.exception.CarNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.ModelDisabledException;
 import util.exception.ModelNotFoundException;
 import util.exception.OutletNotFoundException;
@@ -42,27 +48,35 @@ public class CarSessionBean implements CarSessionBeanRemote, CarSessionBeanLocal
     // "Insert Code > Add Business Method")
     
     @Override
-    public Long createNewCar(Car car, String makeName, String modelName, String outletName) throws ModelNotFoundException, ModelDisabledException, OutletNotFoundException
+    public Long createNewCar(Car car, String makeName, String modelName, String outletName) throws ModelNotFoundException, ModelDisabledException, OutletNotFoundException, InputDataValidationException
     {
-        try {
-            Model model = modelSessionBean.retrieveModelByModelNameAndMake(makeName, modelName);
-            
-            Outlet outlet = outletSessionBean.retrieveOutletByName(outletName);
-            if (model.isIsDisabled()) {
-                throw new ModelDisabledException("Model " + model.getMake() + " is disabled, unable to add new cars to this model.");
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        Validator validator = validatorFactory.getValidator();
+        Set<ConstraintViolation<Car>> constraintViolations = validator.validate(car);
+        
+        if (constraintViolations.isEmpty()) {
+            try {
+                Model model = modelSessionBean.retrieveModelByModelNameAndMake(makeName, modelName);
+
+                Outlet outlet = outletSessionBean.retrieveOutletByName(outletName);
+                if (model.isIsDisabled()) {
+                    throw new ModelDisabledException("Model " + model.getMake() + " is disabled, unable to add new cars to this model.");
+                }
+                car.setModel(model);
+                car.setOutlet(outlet);
+                outlet.getCars().add(car);
+                model.getCars().add(car);
+                em.persist(car);
+                em.flush();
+            } catch (ModelNotFoundException ex) {
+                throw new ModelNotFoundException(ex.getMessage());
+            } catch (OutletNotFoundException ex) {
+                throw new OutletNotFoundException(ex.getMessage());
             }
-            car.setModel(model);
-            car.setOutlet(outlet);
-            outlet.getCars().add(car);
-            model.getCars().add(car);
-            em.persist(car);
-            em.flush();
-        } catch (ModelNotFoundException ex) {
-            throw new ModelNotFoundException(ex.getMessage());
-        } catch (OutletNotFoundException ex) {
-            throw new OutletNotFoundException(ex.getMessage());
+            return car.getCarId();
+        } else {
+            throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
         }
-        return car.getCarId();
     }
     
     @Override
@@ -141,5 +155,17 @@ public class CarSessionBean implements CarSessionBeanRemote, CarSessionBeanLocal
         Query query = em.createQuery("SELECT c FROM Car c WHERE c.model.category.categoryId = :inCategoryId");
         query.setParameter("inCategoryId", carCategoryId);
         return query.getResultList();
+    }
+    
+    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<Car>>constraintViolations)
+    {
+        String msg = "Input data validation error!:";
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            msg += "\n\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage();
+        }
+        
+        return msg;
     }
 }

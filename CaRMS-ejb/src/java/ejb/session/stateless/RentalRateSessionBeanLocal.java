@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.Local;
 import util.exception.CategoryNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.RentalRateNotFoundException;
 
 /**
@@ -19,7 +20,7 @@ import util.exception.RentalRateNotFoundException;
 @Local
 public interface RentalRateSessionBeanLocal {
 
-    public Long createNewRentalRate(RentalRate rentalRate, String categoryName) throws CategoryNotFoundException;
+    public Long createNewRentalRate(RentalRate rentalRate, String categoryName) throws CategoryNotFoundException, InputDataValidationException;
 
     public RentalRate retrieveRentalRateById(Long id) throws RentalRateNotFoundException;
 

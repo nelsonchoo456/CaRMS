@@ -7,9 +7,7 @@ package entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -19,9 +17,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import util.enumeration.RentalRateTypeEnum;
 
 /**
@@ -36,19 +37,26 @@ public class RentalRate implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long rateId;
     @Column(nullable = false, length = 32)
+    @NotNull
+    @Size(max = 32)
     private String name;
     @Column(nullable = false, length = 32)
+    @Min(0)
+    @Digits(integer = 5, fraction = 2)
     private BigDecimal ratePerDay;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @NotNull
     private RentalRateTypeEnum rentalRateType;
     @Temporal(TemporalType.TIMESTAMP)
     private Date startDateTime;
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDateTime;
     @Column(nullable = false)
+    @NotNull
     private Boolean isEnabled;
     @Column(nullable = false)
+    @NotNull
     private Boolean isUsed;
     
     @ManyToOne(optional = false)

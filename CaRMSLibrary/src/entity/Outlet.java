@@ -6,7 +6,6 @@
 package entity;
 
 import java.io.Serializable;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +17,8 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -31,6 +32,8 @@ public class Outlet implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long outletId;
     @Column(nullable = false, length = 64)
+    @NotNull
+    @Size(max = 64)
     private String outletName;
     @Temporal(TemporalType.TIMESTAMP)
     private Date openingHour;

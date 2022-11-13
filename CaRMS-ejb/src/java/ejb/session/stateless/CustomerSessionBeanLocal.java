@@ -8,6 +8,7 @@ package ejb.session.stateless;
 import entity.Customer;
 import javax.ejb.Local;
 import util.exception.CustomerNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.InvalidLoginCredentialException;
 
 /**
@@ -17,7 +18,7 @@ import util.exception.InvalidLoginCredentialException;
 @Local
 public interface CustomerSessionBeanLocal {
 
-    public Long createNewCustomer(Customer customer);
+    public Long createNewCustomer(Customer customer) throws InputDataValidationException;
 
     public Customer retrieveCustomerByEmail(String email) throws CustomerNotFoundException;
 

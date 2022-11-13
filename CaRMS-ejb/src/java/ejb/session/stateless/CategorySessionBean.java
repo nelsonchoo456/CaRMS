@@ -15,6 +15,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -22,7 +23,12 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.exception.CategoryNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.RentalRateNotFoundException;
 
 /**
@@ -42,11 +48,20 @@ public class CategorySessionBean implements CategorySessionBeanRemote, CategoryS
     // "Insert Code > Add Business Method")
     
     @Override
-    public Long createNewCategory(Category category) {
-        em.persist(category);
-        em.flush();
+    public Long createNewCategory(Category category) throws InputDataValidationException {
         
-        return category.getCategoryId();
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        Validator validator = validatorFactory.getValidator();
+        Set<ConstraintViolation<Category>> constraintViolations = validator.validate(category);
+        
+        if (constraintViolations.isEmpty()) {
+            em.persist(category);
+            em.flush();
+
+            return category.getCategoryId();
+        } else {
+            throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
+        }
     }
     
     @Override
@@ -114,5 +129,17 @@ public class CategorySessionBean implements CategorySessionBeanRemote, CategoryS
         } catch (RentalRateNotFoundException ex) {
             throw new RentalRateNotFoundException(ex.getMessage());
         }
+    }
+    
+    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<Category>>constraintViolations)
+    {
+        String msg = "Input data validation error!:";
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            msg += "\n\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage();
+        }
+        
+        return msg;
     }
 }

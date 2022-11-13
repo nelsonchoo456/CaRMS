@@ -34,6 +34,7 @@ import util.enumeration.RentalRateTypeEnum;
 import util.enumeration.UserRoleEnum;
 import util.exception.CategoryNotFoundException;
 import util.exception.EmployeeNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.ModelDisabledException;
 import util.exception.ModelNotFoundException;
 import util.exception.OutletNotFoundException;
@@ -165,6 +166,8 @@ public class DataInitSessionBean {
             ex.printStackTrace();
         } catch (ModelDisabledException ex) {
             ex.printStackTrace();
+        } catch (InputDataValidationException ex) {
+            System.out.println("Invalid data input.");
         }
     }
 }

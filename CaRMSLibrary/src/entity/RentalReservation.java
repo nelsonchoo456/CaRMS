@@ -7,7 +7,6 @@ package entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,6 +18,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -32,18 +33,24 @@ public class RentalReservation implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long rentalReservationId;
     @Column(nullable = false, precision = 11, scale = 2)
+    @NotNull
+    @Digits(integer = 9, fraction = 2)
     private BigDecimal price;
     @Temporal(TemporalType.TIMESTAMP)
     private Date startDateTime;
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDateTime;
     @Column(nullable = false)
+    @NotNull
     private boolean paid;
     @Column(nullable = false)
+    @NotNull
     private boolean isCancelled;
     @Column(nullable = false)
+    @NotNull
     private boolean isComplete;
     @Column(nullable = false)
+    @NotNull
     private boolean isPicked;
     
     
